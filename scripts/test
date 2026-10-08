@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+bash ./scripts/lint
+
+bash ./scripts/with-qml-env bash ./tests/helper/tst_couch_ai_codex_state.sh
+
+bash ./scripts/with-qml-env node --test tests/btrfs/*.test.mjs tests/helper/*.test.mjs
+
+env \
+  -u DISPLAY \
+  -u WAYLAND_DISPLAY \
+  -u GTK_THEME \
+  -u QT_QPA_PLATFORMTHEME \
+  -u QT_STYLE_OVERRIDE \
+  QT_QPA_PLATFORM=offscreen \
+  QSG_RHI_BACKEND=software \
+  bash ./scripts/with-qml-env \
+  qmltestrunner \
+  -input "$repo_root/tests/qml" \
+  -import "$repo_root" \
+  -platform offscreen
+
+bash ./scripts/with-qml-env env QT_QPA_PLATFORM=offscreen QSG_RHI_BACKEND=software COUCH_MARKDOWN_LOGIC="$repo_root/ui/ShellMarkdownTextLogic.js" markdown-guard-test
+
+bash ./scripts/smoke
+bash ./scripts/test-btrfs-smoke

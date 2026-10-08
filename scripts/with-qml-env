@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+colon_paths_exist() {
+  local paths="$1"
+  local path
+  local -a path_entries
+
+  [[ -n "$paths" ]] || return 1
+
+  IFS=':' read -r -a path_entries <<< "$paths"
+  for path in "${path_entries[@]}"; do
+    [[ -z "$path" || -e "$path" ]] || return 1
+  done
+}
+
+command_available() {
+  local command_name="${1:-}"
+
+  [[ -n "$command_name" ]] || return 1
+
+  if [[ "$command_name" == */* ]]; then
+    [[ -x "$command_name" ]]
+  else
+    command -v "$command_name" >/dev/null 2>&1
+  fi
+}
+
+qml_env_available() {
+  [[ -n "${FONTCONFIG_FILE:-}" && -e "${FONTCONFIG_FILE:-}" ]] || return 1
+  colon_paths_exist "${QML_IMPORT_PATH:-}" || return 1
+  colon_paths_exist "${QT_PLUGIN_PATH:-}" || return 1
+  command_available "${1:-}"
+}
+
+if [[ -n "${NIX_BUILD_TOP:-}" && -n "${FONTCONFIG_FILE:-}" && -n "${QML_IMPORT_PATH:-}" && -n "${QT_PLUGIN_PATH:-}" ]]; then
+  unset QML2_IMPORT_PATH
+  exec "$@"
+fi
+
+if [[ "${COUCH_SHELL_PINNED_DEV_ENV:-}" == 1 ]] && qml_env_available "${1:-}"; then
+  unset QML2_IMPORT_PATH
+  exec "$@"
+fi
+
+unset COUCH_SHELL_PINNED_DEV_ENV
+
+exec "${NIX:-nix}" \
+  --extra-experimental-features 'nix-command flakes' \
+  develop .#default \
+  --command env -u QML2_IMPORT_PATH "$@"

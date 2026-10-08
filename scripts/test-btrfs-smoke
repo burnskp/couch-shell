@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+test_root="$(mktemp -d)"
+trap 'rm -rf "$test_root"' EXIT
+cp -r services modules components animations theme ui lib tests "$test_root/"
+chmod -R u+w "$test_root"
+sed 's|"../../|"./|g' tests/smoke/Btrfs.qml > "$test_root/smoke.qml"
+node_path="$(bash ./scripts/with-qml-env sh -c 'command -v node')"
+cat > "$test_root/client" <<CLIENT
+#!/bin/sh
+exec "$node_path" "$test_root/tests/btrfs/smoke-client.mjs"
+CLIENT
+chmod +x "$test_root/client"
+sed -i \
+  -e 's|__BAR_DISK_JSON__|{\\"textPath\\":\\"/\\",\\"popupPaths\\":[{\\"name\\":\\"Unused\\",\\"path\\":\\"/unused\\"}],\\"btrfs\\":{\\"enable\\":true,\\"pollInterval\\":1}}|' \
+  -e "s|__BTRFS_CLIENT__|$test_root/client|" \
+  "$test_root/services/ShellConfig.qml"
+status=0
+timeout 10s env -u DISPLAY -u WAYLAND_DISPLAY -u GTK_THEME -u QT_QPA_PLATFORMTHEME -u QT_STYLE_OVERRIDE \
+  QT_QPA_PLATFORM=offscreen QSG_RHI_BACKEND=software \
+  bash ./scripts/with-qml-env quickshell -p "$test_root/smoke.qml" --no-color \
+  > "$test_root/log" 2>&1 || status=$?
+if [[ "$status" != 0 ]] || grep -Fq 'COUCH_SHELL_SMOKE_FAILURE:' "$test_root/log" || ! grep -Fq 'COUCH_SHELL_BTRFS_SMOKE_OK' "$test_root/log"; then
+  cat "$test_root/log"
+  exit 1
+fi

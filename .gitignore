@@ -1,0 +1,8 @@
+.devenv/
+.direnv/
+.pre-commit-config.yaml
+result
+.qmlls.ini
+.pi/notifications
+.pi/couch-mode/
+port

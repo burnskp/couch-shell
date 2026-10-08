@@ -1,0 +1,10 @@
+module Animations
+
+singleton AnimationPresets 1.0 AnimationPresets.qml
+singleton AnimationRegistry 1.0 AnimationRegistry.qml
+AnimationSelector 1.0 AnimationSelector.qml
+SurfaceAnimation 1.0 SurfaceAnimation.qml
+ShaderSurface 1.0 ShaderSurface.qml
+SlideIn 1.0 SlideIn.qml
+HoverRevealAnimation 1.0 presets/HoverRevealAnimation.qml
+SmokeAnimation 1.0 presets/SmokeAnimation.qml

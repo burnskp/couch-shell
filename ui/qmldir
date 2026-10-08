@@ -1,0 +1,21 @@
+module Ui
+
+singleton ShellStyle 1.0 ShellStyle.qml
+ShellButton 1.0 ShellButton.qml
+ShellDivider 1.0 ShellDivider.qml
+ShellEmptyState 1.0 ShellEmptyState.qml
+ShellKeyValueRow 1.0 ShellKeyValueRow.qml
+ShellMetricBar 1.0 ShellMetricBar.qml
+ShellMarkdownText 1.0 ShellMarkdownText.qml
+ShellOuterShadow 1.0 ShellOuterShadow.qml
+ShellPaneFrame 1.0 ShellPaneFrame.qml
+ShellPopupFrame 1.0 ShellPopupFrame.qml
+ShellSection 1.0 ShellSection.qml
+ShellSlider 1.0 ShellSlider.qml
+ShellSurface 1.0 ShellSurface.qml
+ShellSwitch 1.0 ShellSwitch.qml
+ShellTabButton 1.0 ShellTabButton.qml
+ShellText 1.0 ShellText.qml
+ShellTextArea 1.0 ShellTextArea.qml
+ShellTextField 1.0 ShellTextField.qml
+ShellToggleButton 1.0 ShellToggleButton.qml
