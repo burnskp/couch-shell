@@ -8,7 +8,10 @@ bash ./scripts/lint
 
 bash ./scripts/with-qml-env bash ./tests/helper/tst_couch_ai_codex_state.sh
 
-bash ./scripts/with-qml-env node --test tests/btrfs/*.test.mjs tests/helper/*.test.mjs
+# Bound both individual tests and the runner: leaked child processes can keep
+# Node alive even after its per-test timeout has fired.
+bash ./scripts/with-qml-env timeout -k 5s 120s \
+  node --test --test-timeout=20000 tests/btrfs/*.test.mjs tests/helper/*.test.mjs
 
 env \
   -u DISPLAY \

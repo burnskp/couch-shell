@@ -269,6 +269,11 @@
                 cp -r ${checkSource} source
                 chmod -R u+w source
                 cd source
+                # Quickshell and fontconfig need writable paths in the build sandbox.
+                export XDG_RUNTIME_DIR="$TMPDIR/couch-shell-runtime"
+                export XDG_CACHE_HOME="$TMPDIR/couch-shell-cache"
+                mkdir -p "$XDG_RUNTIME_DIR" "$XDG_CACHE_HOME"
+                chmod 700 "$XDG_RUNTIME_DIR"
                 ${command}
                 touch "$out"
               '';
