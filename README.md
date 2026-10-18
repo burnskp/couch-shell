@@ -314,10 +314,14 @@ nix run .#couch-shell
 
 - `-W 0` makes warnings fail immediately
 - `unused-imports` and `multiline-strings` are promoted from info to warning
-- imports come from the current flake's Qt + upstream Quickshell environment
+- `-E` reads imports directly from the current flake's `QML_IMPORT_PATH`, without a separate login shell
 - `scripts/with-qml-env` refreshes `QML_IMPORT_PATH` and `QT_PLUGIN_PATH` on each run so stale shell variables do not break module resolution
 
 ## Testing
+
+Run `bash ./scripts/test` locally to run the same lint, helper tests, Qt Quick tests, markdown guard tests, and smoke checks as CI. The script enters the pinned Nix environment once and uses temporary runtime and cache directories with desktop display and Qt theme settings cleared. Temporary directories are removed when the suite exits.
+
+The other CI jobs run `bash ./scripts/build` and `nix build --no-link --print-build-logs .#checks.x86_64-linux.formatting`.
 
 Automated tests are intentionally limited to headless-safe checks:
 
