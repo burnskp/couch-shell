@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+test_root="$(mktemp -d)"
+trap 'rm -rf "$test_root"' EXIT
+
+# Use the same writable, isolated paths on developer machines and CI runners.
+export XDG_RUNTIME_DIR="$test_root/runtime"
+export XDG_CACHE_HOME="$test_root/cache"
+mkdir -p "$XDG_RUNTIME_DIR" "$XDG_CACHE_HOME"
+chmod 700 "$XDG_RUNTIME_DIR"
+
+unset DISPLAY WAYLAND_DISPLAY GTK_THEME QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE
+export QT_QPA_PLATFORM=offscreen
+export QSG_RHI_BACKEND=software
+export COUCH_SHELL_TEST_ENV=1
+
+# Enter the pinned environment once for the complete suite.
+bash ./scripts/with-qml-env "$@"

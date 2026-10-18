@@ -25,13 +25,6 @@ jobs:
       - uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24 # v31.11.1
         with:
           github_access_token: ${{ github.token }}
-      - name: Prepare headless runtime
-        run: |
-          XDG_RUNTIME_DIR="$RUNNER_TEMP/couch-shell-runtime"
-          XDG_CACHE_HOME="$RUNNER_TEMP/couch-shell-cache"
-          mkdir -p "$XDG_RUNTIME_DIR" "$XDG_CACHE_HOME"
-          chmod 700 "$XDG_RUNTIME_DIR"
-          printf 'XDG_RUNTIME_DIR=%s\nXDG_CACHE_HOME=%s\n' "$XDG_RUNTIME_DIR" "$XDG_CACHE_HOME" >> "$GITHUB_ENV"
       - name: Run lint, tests, and smoke checks
         run: bash ./scripts/test
 

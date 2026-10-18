@@ -4,6 +4,10 @@ set -euo pipefail
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+if [[ "${COUCH_SHELL_TEST_ENV:-}" != 1 ]]; then
+  exec bash ./scripts/with-test-env bash ./scripts/test "$@"
+fi
+
 bash ./scripts/lint
 
 bash ./scripts/with-qml-env bash ./tests/helper/tst_couch_ai_codex_state.sh

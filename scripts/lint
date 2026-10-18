@@ -20,22 +20,11 @@ if [[ ${#qml_files[@]} -eq 0 ]]; then
   exit 0
 fi
 
-qml_import_path="$(bash ./scripts/with-qml-env bash -lc 'printf %s "$QML_IMPORT_PATH"')"
-import_args=()
-
-if [[ -n "$qml_import_path" ]]; then
-  IFS=':' read -r -a import_paths <<< "$qml_import_path"
-
-  for import_path in "${import_paths[@]}"; do
-    [[ -n "$import_path" ]] && import_args+=("-I" "$import_path")
-  done
-fi
-
 bash ./scripts/with-qml-env \
   qmllint \
   --ignore-settings \
+  -E \
   -W 0 \
   --multiline-strings warning \
   --unused-imports warning \
-  "${import_args[@]}" \
   "${qml_files[@]}"
