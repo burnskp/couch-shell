@@ -1,4 +1,5 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
 import QtQml
 import QtQuick
@@ -51,6 +52,87 @@ Item {
     signal modelsRefreshed(var models, var event)
     signal modelsRefreshError(string message)
     signal statusUpdated()
+    signal usageReceived(var provider)
+    signal usageFailed(string message)
+    property var activeUsageProcess: null
+    readonly property bool usageBusy: activeUsageProcess !== null
+
+    function requestUsage() {
+        if (root.usageBusy || root.authenticatedWorkBlocked || root.loginBusy || !root.configured || !Services.BarManager.visible)
+            return false;
+        const process = usageProcessComponent.createObject(root, {
+            requestEpoch: root.authenticationEpoch,
+            requestAccountId: root.accountId
+        });
+        root.activeUsageProcess = process;
+        root.activeUsageProcess.exec(root.helperCommand("usage"));
+        return true;
+    }
+
+    function cancelUsage() {
+        const process = root.activeUsageProcess;
+        root.activeUsageProcess = null;
+        if (process) {
+            process.running = false;
+            process.destroy();
+        }
+    }
+
+    Component {
+        id: usageProcessComponent
+        Process {
+            id: usageProcess
+            required property int requestEpoch
+            required property string requestAccountId
+            property bool received: false
+            readonly property bool current: root.activeUsageProcess === usageProcess
+                && requestEpoch === root.authenticationEpoch && requestAccountId === root.accountId
+                && !root.authenticatedWorkBlocked && Services.BarManager.visible
+
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    if (!usageProcess.current)
+                        return;
+                    try {
+                        const event = JSON.parse(this.text);
+                        if (event.type === "usage" && event.provider && Array.isArray(event.provider.windows) && event.provider.windows.length) {
+                            usageProcess.received = true;
+                            root.usageReceived(event.provider);
+                        } else {
+                            usageProcess.received = true;
+                            root.usageFailed("Subscription usage unavailable. Check your connection or sign in again.");
+                        }
+                    } catch (error) {
+                        usageProcess.received = true;
+                        root.usageFailed("Invalid subscription usage response");
+                    }
+                }
+            }
+            // Do not forward helper stderr, which can contain authentication details.
+            stderr: StdioCollector {}
+            function finish() {
+                if (root.activeUsageProcess !== usageProcess)
+                    return;
+                if (usageProcess.current && !usageProcess.received)
+                    root.usageFailed("Subscription usage helper failed");
+                root.activeUsageProcess = null;
+                usageProcess.destroy();
+            }
+            onRunningChanged: {
+                if (!running)
+                    Qt.callLater(usageProcess.finish);
+            }
+        }
+    }
+
+    Timer {
+        interval: 25000
+        running: root.usageBusy
+        onTriggered: {
+            root.cancelUsage();
+            root.usageFailed("Subscription usage request timed out");
+        }
+    }
 
     function helperCommand(subcommand) {
         const configuredHelper = Services.ShellConfig.aiCodexHelper;
@@ -79,6 +161,8 @@ Item {
         if (!event)
             return;
 
+        if (root.accountId !== (event.accountId || "") || !event.configured)
+            root.cancelUsage();
         root.configured = !!event.configured;
         root.expired = !!event.expired;
         root.accountId = event.accountId || "";
@@ -109,6 +193,7 @@ Item {
         root.lastError = "";
         root.authUrl = "";
         root.loginMessage = "Waiting for browser approval…";
+        root.cancelUsage();
         root.loginBusy = true;
         loginProcess.requestEpoch = root.authenticationEpoch;
         loginProcess.exec(root.helperCommand("login"));
@@ -118,6 +203,7 @@ Item {
         if (root.logoutBusy)
             return;
 
+        root.cancelUsage();
         root.authenticatedWorkBlocked = true;
         root.authenticationEpoch += 1;
         root.logoutBusy = true;

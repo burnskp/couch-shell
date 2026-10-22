@@ -1139,10 +1139,108 @@ async function logoutCommand() {
 	jsonOut({ type: "logout_complete", authFile: AUTH_FILE });
 }
 
+// Keep the private ChatGPT backend contract behind this provider adapter.
+export function normalizeSubscriptionUsage(body, now = Date.now()) {
+	const limits = body?.rate_limit;
+	const windows = [];
+	for (const key of ["primary_window", "secondary_window"]) {
+		const value = limits?.[key];
+		if (value == null) continue;
+		if (
+			typeof value.used_percent !== "number" ||
+			!Number.isFinite(value.used_percent) ||
+			value.used_percent < 0
+		)
+			throw new Error("Invalid usage percentage");
+		const durationSeconds =
+			Number.isFinite(value.limit_window_seconds) &&
+			value.limit_window_seconds > 0
+				? value.limit_window_seconds
+				: null;
+		const resetsAt =
+			Number.isFinite(value.reset_at) && value.reset_at > 0
+				? value.reset_at * 1000
+				: Number.isFinite(value.reset_after_seconds) &&
+						value.reset_after_seconds >= 0
+					? now + value.reset_after_seconds * 1000
+					: null;
+		windows.push({
+			id: key,
+			remainingPercent: Math.max(0, 100 - value.used_percent),
+			durationSeconds,
+			resetsAt,
+		});
+	}
+	if (!windows.length) throw new Error("No subscription quota available");
+	return {
+		id: AUTH_PROVIDER,
+		name: "ChatGPT",
+		plan: typeof body.plan_type === "string" ? body.plan_type : "",
+		updatedAt: now,
+		windows,
+	};
+}
+
+export function subscriptionUsageUrl(base = CODEX_BASE_URL) {
+	return `${base.replace(/\/+$/, "").replace(/\/codex(?:\/(?:responses|models))?$/, "")}/wham/usage`;
+}
+
+export async function fetchSubscriptionUsage(
+	credentials,
+	{ fetchImpl = fetch, timeoutMs = 8000, now = Date.now() } = {},
+) {
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), timeoutMs);
+	try {
+		const response = await fetchImpl(subscriptionUsageUrl(), {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${credentials.access}`,
+				"chatgpt-account-id":
+					credentials.accountId || accountIdFromAccess(credentials.access),
+				accept: "application/json",
+			},
+			signal: controller.signal,
+		});
+		if (!response.ok)
+			return {
+				error: `Usage request failed (HTTP ${response.status})`,
+				unauthorized: response.status === 401,
+			};
+		return { provider: normalizeSubscriptionUsage(await response.json(), now) };
+	} catch {
+		return {
+			error: controller.signal.aborted
+				? "Usage request timed out"
+				: "Subscription usage unavailable",
+		};
+	} finally {
+		clearTimeout(timeout);
+	}
+}
+
+async function usageCommand() {
+	try {
+		let result = await fetchSubscriptionUsage(await ensureFreshCredentials());
+		if (result.unauthorized)
+			result = await fetchSubscriptionUsage(await ensureFreshCredentials(true));
+		if (result.error) fail(result.error);
+		else jsonOut({ type: "usage", provider: result.provider });
+	} catch {
+		// Credential and provider failures may contain token-bearing response bodies.
+		fail(
+			"Unable to authenticate subscription usage. Sign in to Couch AI again.",
+		);
+	}
+}
+
 async function main() {
 	const [command] = process.argv.slice(2);
 	try {
 		switch (command) {
+			case "usage":
+				await usageCommand();
+				break;
 			case "status":
 				jsonOut(publicStatusForCredentials(await getStoredCredentials()));
 				break;

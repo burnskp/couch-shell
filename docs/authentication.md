@@ -30,7 +30,7 @@ unrelated entries remain in the file; the provider's credentials are removed.
 ## Shell logout
 
 Logout immediately blocks new authenticated work, cancels chat, title, model
-refresh, login, and status helpers, and advances the service's event generation.
+refresh, subscription usage, login, and status helpers, and advances the service's event generation.
 Late output and stderr from older helpers are ignored. Active chat/title requests
 receive a cancellation event so they do not remain pending.
 

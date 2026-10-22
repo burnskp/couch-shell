@@ -136,3 +136,35 @@ cat /run/couch-shell/btrfs.json
 ```
 
 An inactive service before the first request is expected. If a failed report is cached, wait for the configured interval before retrying. `bash ./scripts/test` covers parsers, socket behavior, formatting, and offscreen hide/show cancellation. `nix build .#checks.x86_64-linux.btrfs-module .#checks.x86_64-linux.btrfs-vm` checks system integration, permissions, and real Btrfs accounting in a disposable VM.
+
+## AI Subscription Usage
+
+`AiUsageState` owns one shared provider model and the bar-only refresh/countdown timers.
+`AiChatService` owns the cancellable helper process and reuses its existing authentication
+state. No widget owns polling or credentials. Hiding the bar cancels the helper and
+stops timers; showing it refreshes immediately. Requests run every 60 seconds, with a
+25-second overall deadline and an eight-second HTTP deadline. Known resets trigger a
+refresh; an already-expired server snapshot is retried on the normal interval instead
+of causing a tight loop.
+
+`couch-ai-codex usage` reads `GET /wham/usage` under the existing backend base URL,
+using the existing credential transaction/refresh implementation. A 401 permits one
+forced token refresh and retry. Provider response bodies, credentials, and helper
+stderr are never forwarded into usage errors. The endpoint is private; the adapter
+isolates its contract from QML. Tests use fake credentials and injected responses.
+
+The normalized provider record has `id`, `name`, `plan`, `updatedAt` (epoch milliseconds),
+and `windows`. Each window has `id`, `remainingPercent` (unrounded 0–100),
+`durationSeconds` (nullable), and `resetsAt` (nullable epoch milliseconds). QML adds
+`status` (`idle`, `loading`, `ready`, or `error`) and `error`. Additional adapters should
+publish this model and retain their own authentication behind the service boundary;
+`providers` currently contains only `openai-codex`, the selected chip provider.
+
+The chip selects the minimum remaining percentage. Positive fractions round upward.
+At zero it counts down to the latest exhausted window's reset, provided every blocking
+window has a known reset; otherwise it displays `0%`. Countdown text rounds up to whole
+minutes and permits hours over 24 in the chip. The hover's reset row uses days, hours,
+and minutes, such as `2d 3h 15m`. A reset never implies a replenished quota: expired,
+loading, and failed readings show `Unk`, with previous windows marked stale in the
+hover. Account changes and logout discard previous windows. The chip uses
+`PaneManager.toggleLeftTab` for its click action and the default hover animation preset.

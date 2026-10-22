@@ -75,6 +75,13 @@ Item {
             Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
         }
 
+        Widgets.AiUsageWidget {
+            id: aiUsageWidget
+
+            barScreen: root.barScreen
+            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+        }
+
         Widgets.WifiWidget {
             id: wifiWidget
 
@@ -116,7 +123,7 @@ Item {
         anchorSurface: barSurface
         openDelay: 500
         closeDelay: 120
-        trackedWidgets: [clockWidget, audioWidget, batteryWidget, wifiWidget, diskWidget, ramWidget, temperatureWidget, cpuWidget]
+        trackedWidgets: [clockWidget, audioWidget, batteryWidget, wifiWidget, aiUsageWidget, diskWidget, ramWidget, temperatureWidget, cpuWidget]
     }
 
     Connections {

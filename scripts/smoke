@@ -4,8 +4,9 @@ set -euo pipefail
 repo_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
-log_file="$(mktemp)"
-trap 'rm -f "$log_file"' EXIT
+smoke_root="$(mktemp -d)"
+log_file="$smoke_root/log"
+trap 'rm -rf "$smoke_root"' EXIT
 
 status=0
 timeout 25s env \
@@ -14,6 +15,7 @@ timeout 25s env \
   -u GTK_THEME \
   -u QT_QPA_PLATFORMTHEME \
   -u QT_STYLE_OVERRIDE \
+  COUCH_SHELL_AUTH_FILE="$smoke_root/auth.json" \
   QT_QPA_PLATFORM=offscreen \
   QSG_RHI_BACKEND=software \
   bash ./scripts/with-qml-env \

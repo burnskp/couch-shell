@@ -1,4 +1,5 @@
 singleton AiChatService 1.0 AiChatService.qml
+singleton AiUsageState 1.0 AiUsageState.qml
 singleton AudioState 1.0 AudioState.qml
 singleton BarManager 1.0 BarManager.qml
 singleton BatteryState 1.0 BatteryState.qml

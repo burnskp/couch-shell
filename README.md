@@ -271,6 +271,28 @@ For NixOS with Home Manager, this can look like:
 
 If you do not use `$mod`, replace it with the modifier string you use in Hyprland, such as `SUPER`.
 
+## AI subscription usage
+
+The robot chip immediately before Wi-Fi shows the lowest remaining Codex subscription
+quota for the ChatGPT account signed in through Couch AI. Click it to toggle Couch AI
+on that monitor. The hover shows the plan, each quota window, remaining percentage,
+and time until reset in days, hours, and minutes (for example, `2d 3h 15m`).
+
+When a quota is exhausted, the chip switches to `H:MM` until access can resume. If
+multiple windows are exhausted it uses the latest blocking reset. Minutes round up,
+seconds are never displayed, and hours can exceed 24. Positive fractional percentages
+round up; only an exhausted quota displays zero. A missing reset leaves `0%` in the
+chip. `Unk` means no current reading; the hover explains sign-in or refresh failures
+and marks retained readings stale.
+
+Usage refreshes every 60 seconds while the bar is visible, immediately on show or
+sign-in, and when a known reset is reached. All monitors share the same request.
+Hiding the bar cancels usage work; logout clears usage. This tracks the subscription
+quota used by Codex/Couch AI, not ChatGPT website message counts or API spending.
+The ChatGPT backend usage endpoint is private and may change; unsupported responses
+show unavailable rather than estimating a quota. See [the usage adapter contract](docs/bar.md#ai-subscription-usage)
+for extending this to other providers.
+
 ## AI chat local state
 
 Couch AI stores OpenAI/Codex OAuth credentials, local chat history, and the cached model catalog separately under the user data directory:
