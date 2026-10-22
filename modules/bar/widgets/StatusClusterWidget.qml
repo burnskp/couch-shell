@@ -275,6 +275,47 @@ Rectangle {
         }
 
         ClusterIconButton {
+            id: idleIndicator
+
+            visible: Services.IdleInhibitorState.enabled
+            interactive: true
+            acceptedButtons: Qt.LeftButton
+            onClicked: {
+                Services.IdleInhibitorState.enabled = false;
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: ""
+                font.family: Theme.Theme.fontFamily
+                font.pixelSize: Theme.Theme.barIconFontSize
+                font.weight: Font.Bold
+                color: "black"
+            }
+        }
+
+        ClusterIconButton {
+            id: screenSaverIndicator
+
+            visible: Services.ScreenSaverState.available && !Services.ScreenSaverState.active
+            interactive: !Services.ScreenSaverState.busy
+            acceptedButtons: interactive ? Qt.LeftButton : Qt.NoButton
+            onClicked: {
+                if (Services.ScreenSaverState.available && !Services.ScreenSaverState.active && !Services.ScreenSaverState.busy)
+                    Services.ScreenSaverState.toggle();
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: "󰶐" // nf-md-monitor_off
+                font.family: Theme.Theme.fontFamily
+                font.pixelSize: Theme.Theme.barIconFontSize
+                font.weight: Font.Bold
+                color: "black"
+            }
+        }
+
+        ClusterIconButton {
             id: notificationButton
 
             interactive: true
