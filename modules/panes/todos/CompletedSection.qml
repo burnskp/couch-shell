@@ -86,10 +86,10 @@ Ui.ShellSurface {
         }
 
         Repeater {
-            model: root.paneState.completedOpen ? root.completed : []
+            model: root.paneState.completedOpen ? root.paneState.completedTodoGroups() : []
 
-            delegate: RowLayout {
-                id: completedRow
+            delegate: ColumnLayout {
+                id: completedGroup
 
                 required property var modelData
 
@@ -97,46 +97,61 @@ Ui.ShellSurface {
                 spacing: Theme.Theme.listGap
 
                 Ui.ShellText {
-                    role: "muted"
-                    style: root.shellStyle
-                    text: "✓"
-                }
-
-                Ui.ShellText {
+                    Layout.fillWidth: true
                     visible: !root.paneState.isProjectScope()
                     role: "label"
                     style: root.shellStyle
-                    text: completedRow.modelData.project || completedRow.modelData.project_name || "project"
+                    text: completedGroup.modelData.project || "project"
+                    elide: Text.ElideRight
                 }
 
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 1
+                Repeater {
+                    model: completedGroup.modelData.todos
 
-                    Ui.ShellText {
+                    delegate: RowLayout {
+                        id: completedRow
+
+                        required property var modelData
+
                         Layout.fillWidth: true
-                        role: "muted"
-                        style: root.shellStyle
-                        text: completedRow.modelData.title || "Untitled task"
-                        wrapMode: Text.Wrap
-                    }
+                        spacing: Theme.Theme.listGap
 
-                    Ui.ShellText {
-                        Layout.fillWidth: true
-                        visible: (completedRow.modelData.notes || "").trim().length > 0
-                        role: "muted"
-                        style: root.shellStyle
-                        text: (completedRow.modelData.notes || "").replace(/\n+/g, " ")
-                        elide: Text.ElideRight
-                    }
-                }
+                        Ui.ShellText {
+                            role: "muted"
+                            style: root.shellStyle
+                            text: "✓"
+                        }
 
-                Ui.ShellButton {
-                    style: root.shellStyle
-                    variant: "ghost"
-                    text: "restore"
-                    enabled: !root.paneState.mutationBusy
-                    onClicked: root.paneState.restoreTask(completedRow.modelData.id)
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 1
+
+                            Ui.ShellText {
+                                Layout.fillWidth: true
+                                role: "muted"
+                                style: root.shellStyle
+                                text: completedRow.modelData.title || "Untitled task"
+                                wrapMode: Text.Wrap
+                            }
+
+                            Ui.ShellText {
+                                Layout.fillWidth: true
+                                visible: (completedRow.modelData.notes || "").trim().length > 0
+                                role: "muted"
+                                style: root.shellStyle
+                                text: (completedRow.modelData.notes || "").replace(/\n+/g, " ")
+                                elide: Text.ElideRight
+                            }
+                        }
+
+                        Ui.ShellButton {
+                            style: root.shellStyle
+                            variant: "ghost"
+                            text: "restore"
+                            enabled: !root.paneState.mutationBusy
+                            onClicked: root.paneState.restoreTask(completedRow.modelData.id)
+                        }
+                    }
                 }
             }
         }

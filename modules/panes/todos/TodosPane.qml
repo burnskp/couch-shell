@@ -278,18 +278,56 @@ FocusScope {
                     }
 
                     Repeater {
-                        model: root.paneState.visibleTodos()
+                        model: root.paneState.visibleTodoGroups()
 
-                        delegate: TodoRow {
-                            id: todoDelegate
+                        delegate: ColumnLayout {
+                            id: projectGroup
 
                             required property var modelData
+                            required property int index
 
                             Layout.fillWidth: true
-                            shellStyle: root.shellStyle
-                            paneState: root.paneState
-                            todo: todoDelegate.modelData
-                            dragLayer: dragLayer
+                            Layout.topMargin: projectGroup.index > 0 && projectHeader.visible ? Theme.Theme.listGap + 4 : 0
+                            spacing: Theme.Theme.listGap
+
+                            RowLayout {
+                                id: projectHeader
+
+                                Layout.fillWidth: true
+                                visible: !root.paneState.isProjectScope()
+                                spacing: Theme.Theme.listGap
+
+                                Ui.ShellText {
+                                    Layout.fillWidth: true
+                                    role: "heading"
+                                    style: root.shellStyle
+                                    text: projectGroup.modelData.project || "project"
+                                    elide: Text.ElideRight
+                                }
+
+                                Ui.ShellText {
+                                    role: "muted"
+                                    style: root.shellStyle
+                                    text: String(projectGroup.modelData.todos.length)
+                                    horizontalAlignment: Text.AlignRight
+                                }
+                            }
+
+                            Repeater {
+                                model: projectGroup.modelData.todos
+
+                                delegate: TodoRow {
+                                    id: todoDelegate
+
+                                    required property var modelData
+
+                                    Layout.fillWidth: true
+                                    shellStyle: root.shellStyle
+                                    paneState: root.paneState
+                                    todo: todoDelegate.modelData
+                                    dragLayer: dragLayer
+                                }
+                            }
                         }
                     }
 

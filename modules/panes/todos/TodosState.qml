@@ -144,10 +144,36 @@ Item {
         return root.scope !== root.allProjectsScope;
     }
 
+    function compareProjects(left, right) {
+        if (left === right)
+            return 0;
+
+        const leftInbox = left.toLowerCase() === "inbox";
+        const rightInbox = right.toLowerCase() === "inbox";
+        if (leftInbox !== rightInbox)
+            return leftInbox ? -1 : 1;
+        return left.localeCompare(right);
+    }
+
+    function groupTodosByProject(todos) {
+        const groups = [];
+        for (const todo of todos) {
+            const last = groups.length > 0 ? groups[groups.length - 1] : null;
+            if (last && last.project === todo.project)
+                last.todos.push(todo);
+            else
+                groups.push({
+                    project: todo.project,
+                    todos: [todo]
+                });
+        }
+        return groups;
+    }
+
     function visibleTodos() {
         return root.pendingTasks.slice().sort((a, b) => {
             if (a.project !== b.project)
-                return a.project.localeCompare(b.project);
+                return root.compareProjects(a.project, b.project);
             if (a.order !== b.order)
                 return a.order - b.order;
             return Number(a.id) - Number(b.id);
@@ -157,13 +183,21 @@ Item {
     function completedTodos() {
         return root.completedTasks.slice().sort((a, b) => {
             if (a.project !== b.project)
-                return a.project.localeCompare(b.project);
+                return root.compareProjects(a.project, b.project);
             const left = b.completed_at || "";
             const right = a.completed_at || "";
             if (left !== right)
                 return left.localeCompare(right);
             return Number(a.id) - Number(b.id);
         });
+    }
+
+    function visibleTodoGroups() {
+        return root.groupTodosByProject(root.visibleTodos());
+    }
+
+    function completedTodoGroups() {
+        return root.groupTodosByProject(root.completedTodos());
     }
 
     function projectIncomplete(project) {

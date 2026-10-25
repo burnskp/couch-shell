@@ -180,24 +180,6 @@ Item {
                     }
                 }
 
-                Rectangle {
-                    visible: !root.projectScope
-                    implicitWidth: projectChipText.implicitWidth + 14
-                    implicitHeight: 18
-                    color: Qt.alpha(Theme.Theme.blue, 0.12)
-                    border.width: 1
-                    border.color: Theme.Theme.surface0
-
-                    Ui.ShellText {
-                        id: projectChipText
-
-                        anchors.centerIn: parent
-                        role: "label"
-                        style: root.shellStyle
-                        text: root.todo.project || root.todo.project_name || "project"
-                    }
-                }
-
                 Ui.ShellButton {
                     style: root.shellStyle
                     variant: "ghost"
