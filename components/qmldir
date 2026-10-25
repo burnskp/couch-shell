@@ -8,6 +8,7 @@ HoverPopupMeterRow 1.0 HoverPopupMeterRow.qml
 HoverPopupMetricBar 1.0 HoverPopupMetricBar.qml
 HoverPopupKeyValueRow 1.0 HoverPopupKeyValueRow.qml
 HoverPopupProcessRow 1.0 HoverPopupProcessRow.qml
+CenteredGlyph 1.0 CenteredGlyph.qml
 ModuleChip 1.0 ModuleChip.qml
 NotificationAppIcon 1.0 NotificationAppIcon.qml
 WidgetChip 1.0 WidgetChip.qml

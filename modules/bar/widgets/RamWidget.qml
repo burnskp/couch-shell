@@ -9,8 +9,6 @@ Components.WidgetChip {
     popupPreset: Components.HoverPopupPresets.ram
     popupWidth: 292
     iconGlyph: ""
-    iconHorizontalOffsetSet: true
-    iconHorizontalOffset: 1
     valueText: Services.SystemStatsState.memoryAvailableLabel
     popupContent: Component {
         Popups.RamHover {}

@@ -134,6 +134,8 @@ Components.WidgetChip {
 }
 ```
 
+The icon glyph is rendered with `Components.CenteredGlyph`, which centers it on its ink bounds (measured at 8x size and snapped to device pixels) rather than its font advance box, so Nerd Font icons line up without per-widget `iconHorizontalOffset` / `iconVerticalOffset` nudges. Keep those for rare optical tweaks only. Every icon block has the same width, `Theme.moduleLeadingWidth`.
+
 Prefer `valueText` unless the widget really needs custom content. Use `valueContent` only when a plain text value is not enough.
 
 ## Popup Shell
@@ -304,6 +306,10 @@ Preferred thin divider for popup sections.
 Use it instead of ad hoc `Rectangle { implicitHeight: 1 }` separators in hover popups.
 
 ## Specialized Helpers
+
+### `Components.CenteredGlyph`
+
+A `Text` that centers an icon glyph on its ink bounds inside its parent. Use it instead of `anchors.centerIn` for Nerd Font icons in fixed-size blocks; `ModuleChip` and `WindowList` use it. `horizontalCenterOffset` / `verticalCenterOffset` are available for rare optical tweaks.
 
 ### `Components.NotificationAppIcon`
 

@@ -61,14 +61,10 @@ Rectangle {
             color: root.active ? root.activeLeadingBackground : root.hovered ? root.hoverLeadingBackground : root.leadingBackground
             radius: 0
 
-            Text {
-                anchors.centerIn: parent
-                anchors.horizontalCenterOffset: root.leadingHorizontalCenterOffset
-                anchors.verticalCenterOffset: root.leadingVerticalCenterOffset
+            CenteredGlyph {
+                horizontalCenterOffset: root.leadingHorizontalCenterOffset
+                verticalCenterOffset: root.leadingVerticalCenterOffset
                 text: root.leadingText
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.barIconFontSize
-                font.weight: Font.Bold
                 color: root.active ? root.activeLeadingTextColor : root.leadingTextColor
             }
         }

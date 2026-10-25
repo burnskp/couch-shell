@@ -6,6 +6,7 @@ import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
 import "../../../services" as Services
+import "../../../components" as Components
 import "../../../theme" as Theme
 import "./WindowListLogic.js" as WindowListLogic
 
@@ -66,19 +67,14 @@ RowLayout {
                         id: windowIcon
 
                         anchors.centerIn: parent
-                        anchors.horizontalCenterOffset: 1
                         implicitSize: Theme.Theme.iconSize
                         source: windowChip.iconSource
                         visible: !windowChip.iconGlyph.length && !windowChip.imageIconFailed
                     }
 
-                    Text {
-                        anchors.centerIn: parent
-                        anchors.horizontalCenterOffset: 1
+                    Components.CenteredGlyph {
                         visible: windowChip.iconGlyph.length > 0 || windowChip.imageIconFailed
                         text: windowChip.iconGlyph.length > 0 ? windowChip.iconGlyph : windowChip.fallbackGlyph
-                        font.family: Theme.Theme.fontFamily
-                        font.pixelSize: Theme.Theme.barIconFontSize
                         font.weight: Theme.Theme.fontWeight
                         color: Theme.Theme.barBackground
                     }

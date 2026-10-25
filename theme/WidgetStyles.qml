@@ -146,7 +146,6 @@ QtObject {
             preset.activeLeadingTextColor = ThemeModule.Theme.text;
             break;
         case clock:
-            preset.leadingHorizontalCenterOffset = 1;
             break;
         case accent:
             preset.leadingBackground = ThemeModule.Theme.barAccent;
