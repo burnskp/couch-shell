@@ -6,8 +6,11 @@ import { join } from "node:path";
 import test from "node:test";
 import { promisify } from "node:util";
 import {
+	fetchClaudeUsage,
 	fetchSubscriptionUsage,
+	normalizeClaudeUsage,
 	normalizeSubscriptionUsage,
+	readClaudeCredentials,
 	subscriptionUsageUrl,
 } from "../../tools/couch-ai-codex.mjs";
 
@@ -186,4 +189,140 @@ globalThis.fetch = async (url, options) => {
 	assert.doesNotMatch(stdout, /secret|private body/);
 	const saved = JSON.parse(await readFile(auth, "utf8"));
 	assert.match(saved["openai-codex"].access, /^fresh-secret-2\./);
+});
+
+const claudeBody = {
+	five_hour: { utilization: 54.5, resets_at: "2026-10-25T12:00:00.000Z" },
+	seven_day: { utilization: 10, resets_at: null },
+	seven_day_opus: null,
+	seven_day_sonnet: { utilization: 120, resets_at: "not a date" },
+};
+const claudeCredentials = { access: "secret-token", plan: "pro" };
+
+test("normalizes Claude windows, utilization, ISO resets and model labels", () => {
+	const usage = normalizeClaudeUsage(claudeBody, "pro", 1000);
+	assert.equal(usage.id, "claude");
+	assert.equal(usage.name, "Claude");
+	assert.equal(usage.plan, "pro");
+	assert.equal(usage.updatedAt, 1000);
+	assert.deepEqual(usage.windows, [
+		{
+			id: "five_hour",
+			remainingPercent: 45.5,
+			durationSeconds: 18000,
+			resetsAt: Date.parse("2026-10-25T12:00:00.000Z"),
+		},
+		{
+			id: "seven_day",
+			remainingPercent: 90,
+			durationSeconds: 604800,
+			resetsAt: null,
+		},
+		{
+			id: "seven_day_sonnet",
+			remainingPercent: 0,
+			durationSeconds: 604800,
+			resetsAt: null,
+			label: "Sonnet week",
+		},
+	]);
+});
+
+for (const invalid of [
+	undefined,
+	{},
+	{ five_hour: null, seven_day: null },
+	...[null, "20", -1, NaN, Infinity].map((utilization) => ({
+		five_hour: { utilization },
+	})),
+]) {
+	test(`rejects unavailable/invalid Claude quota ${JSON.stringify(invalid)}`, () => {
+		assert.throws(() => normalizeClaudeUsage(invalid));
+	});
+}
+
+test("reads Claude Code credentials without modifying them", async (t) => {
+	const dir = await mkdtemp(join(tmpdir(), "couch-claude-"));
+	t.after(() => rm(dir, { recursive: true, force: true }));
+	const file = join(dir, ".credentials.json");
+	const raw = JSON.stringify({
+		claudeAiOauth: {
+			accessToken: "secret-token",
+			refreshToken: "refresh-secret",
+			expiresAt: 5000,
+			subscriptionType: "pro",
+		},
+	});
+	await writeFile(file, raw);
+	assert.deepEqual(await readClaudeCredentials(1000, file), claudeCredentials);
+	await assert.rejects(readClaudeCredentials(5000, file), /expired/);
+	assert.equal(await readFile(file, "utf8"), raw);
+	await assert.rejects(
+		readClaudeCredentials(1000, join(dir, "missing")),
+		/Sign in/,
+	);
+	await writeFile(file, JSON.stringify({ claudeAiOauth: {} }));
+	await assert.rejects(readClaudeCredentials(1000, file), /Sign in/);
+	await writeFile(file, "secret-token{");
+	await assert.rejects(
+		readClaudeCredentials(1000, file),
+		(error) => /Sign in/.test(error.message) && !/secret/.test(error.message),
+	);
+});
+
+test("Claude usage sends the OAuth token only in headers", async () => {
+	const result = await fetchClaudeUsage(claudeCredentials, {
+		now: 1000,
+		fetchImpl: async (url, options) => {
+			assert.equal(url, "https://api.anthropic.com/api/oauth/usage");
+			assert.equal(options.headers.Authorization, "Bearer secret-token");
+			assert.equal(options.headers["anthropic-beta"], "oauth-2025-04-20");
+			return Response.json(claudeBody);
+		},
+	});
+	assert.equal(result.provider.plan, "pro");
+	assert.equal(result.provider.windows.length, 3);
+	assert.doesNotMatch(JSON.stringify(result), /secret-token/);
+});
+
+for (const status of [401, 403, 429, 500]) {
+	test(`Claude HTTP ${status} never includes response secrets`, async () => {
+		const result = await fetchClaudeUsage(claudeCredentials, {
+			fetchImpl: async () => new Response("secret-token", { status }),
+		});
+		assert.equal(result.unauthorized, status === 401);
+		assert.doesNotMatch(JSON.stringify(result), /secret-token/);
+	});
+}
+
+test("Claude usage command reports a rejected token as expired without retrying", async (t) => {
+	const dir = await mkdtemp(join(tmpdir(), "couch-claude-"));
+	t.after(() => rm(dir, { recursive: true, force: true }));
+	const file = join(dir, ".credentials.json");
+	const preload = join(dir, "fetch.mjs");
+	const raw = JSON.stringify({
+		claudeAiOauth: {
+			accessToken: "secret-token",
+			expiresAt: Date.now() + 3600000,
+		},
+	});
+	await writeFile(file, raw);
+	await writeFile(
+		preload,
+		`let calls = 0;
+globalThis.fetch = async () => {
+    if (++calls > 1) throw new Error('retried');
+    return new Response('private body', { status: 401 });
+};`,
+	);
+	const result = await promisify(execFile)(
+		process.execPath,
+		["--import", preload, "tools/couch-ai-codex.mjs", "claude-usage"],
+		{ env: { ...process.env, COUCH_SHELL_CLAUDE_CREDENTIALS_FILE: file } },
+	).catch((error) => error);
+	const event = JSON.parse(result.stdout);
+	assert.equal(event.type, "error");
+	assert.match(event.message, /expired/);
+	assert.doesNotMatch(result.stdout, /secret|private body/);
+	assert.equal(await readFile(file, "utf8"), raw);
 });

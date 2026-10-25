@@ -16,6 +16,7 @@ timeout 25s env \
   -u QT_QPA_PLATFORMTHEME \
   -u QT_STYLE_OVERRIDE \
   COUCH_SHELL_AUTH_FILE="$smoke_root/auth.json" \
+  COUCH_SHELL_CLAUDE_CREDENTIALS_FILE="$smoke_root/claude-credentials.json" \
   QT_QPA_PLATFORM=offscreen \
   QSG_RHI_BACKEND=software \
   bash ./scripts/with-qml-env \

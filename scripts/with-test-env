@@ -17,6 +17,8 @@ unset DISPLAY WAYLAND_DISPLAY GTK_THEME QT_QPA_PLATFORMTHEME QT_STYLE_OVERRIDE
 export QT_QPA_PLATFORM=offscreen
 export QSG_RHI_BACKEND=software
 export COUCH_SHELL_TEST_ENV=1
+# Never read the developer's Claude Code login or reach Anthropic from tests.
+export COUCH_SHELL_CLAUDE_CREDENTIALS_FILE="$test_root/claude-credentials.json"
 
 # Enter the pinned environment once for the complete suite.
 bash ./scripts/with-qml-env "$@"

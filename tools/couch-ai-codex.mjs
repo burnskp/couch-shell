@@ -38,6 +38,18 @@ const JWT_CLAIM_PATH = "https://api.openai.com/auth";
 const CODEX_BASE_URL =
 	process.env.COUCH_SHELL_CODEX_BASE_URL || "https://chatgpt.com/backend-api";
 const ORIGINATOR = process.env.COUCH_SHELL_CODEX_ORIGINATOR || "pi";
+const CLAUDE_CREDENTIALS_FILE =
+	process.env.COUCH_SHELL_CLAUDE_CREDENTIALS_FILE ||
+	join(
+		process.env.CLAUDE_CONFIG_DIR || join(homedir(), ".claude"),
+		".credentials.json",
+	);
+const CLAUDE_USAGE_URL =
+	process.env.COUCH_SHELL_CLAUDE_USAGE_URL ||
+	"https://api.anthropic.com/api/oauth/usage";
+const CLAUDE_SIGN_IN_MESSAGE = "Sign in to Claude Code to track Claude usage.";
+const CLAUDE_EXPIRED_MESSAGE =
+	"Claude Code sign-in expired. Open Claude Code to refresh it.";
 const CODEX_RELEASE_URL =
 	"https://api.github.com/repos/openai/codex/releases/latest";
 const DEFAULT_MODEL = "gpt-5.5";
@@ -1185,21 +1197,18 @@ export function subscriptionUsageUrl(base = CODEX_BASE_URL) {
 	return `${base.replace(/\/+$/, "").replace(/\/codex(?:\/(?:responses|models))?$/, "")}/wham/usage`;
 }
 
-export async function fetchSubscriptionUsage(
-	credentials,
-	{ fetchImpl = fetch, timeoutMs = 8000, now = Date.now() } = {},
+async function fetchUsageJson(
+	url,
+	headers,
+	normalize,
+	{ fetchImpl = fetch, timeoutMs = 8000 } = {},
 ) {
 	const controller = new AbortController();
 	const timeout = setTimeout(() => controller.abort(), timeoutMs);
 	try {
-		const response = await fetchImpl(subscriptionUsageUrl(), {
+		const response = await fetchImpl(url, {
 			method: "GET",
-			headers: {
-				Authorization: `Bearer ${credentials.access}`,
-				"chatgpt-account-id":
-					credentials.accountId || accountIdFromAccess(credentials.access),
-				accept: "application/json",
-			},
+			headers: { ...headers, accept: "application/json" },
 			signal: controller.signal,
 		});
 		if (!response.ok)
@@ -1207,7 +1216,7 @@ export async function fetchSubscriptionUsage(
 				error: `Usage request failed (HTTP ${response.status})`,
 				unauthorized: response.status === 401,
 			};
-		return { provider: normalizeSubscriptionUsage(await response.json(), now) };
+		return { provider: normalize(await response.json()) };
 	} catch {
 		return {
 			error: controller.signal.aborted
@@ -1217,6 +1226,22 @@ export async function fetchSubscriptionUsage(
 	} finally {
 		clearTimeout(timeout);
 	}
+}
+
+export async function fetchSubscriptionUsage(
+	credentials,
+	{ now = Date.now(), ...options } = {},
+) {
+	return fetchUsageJson(
+		subscriptionUsageUrl(),
+		{
+			Authorization: `Bearer ${credentials.access}`,
+			"chatgpt-account-id":
+				credentials.accountId || accountIdFromAccess(credentials.access),
+		},
+		(body) => normalizeSubscriptionUsage(body, now),
+		options,
+	);
 }
 
 async function usageCommand() {
@@ -1234,12 +1259,99 @@ async function usageCommand() {
 	}
 }
 
+const CLAUDE_WINDOWS = [
+	["five_hour", 18000, null],
+	["seven_day", 604800, null],
+	["seven_day_opus", 604800, "Opus week"],
+	["seven_day_sonnet", 604800, "Sonnet week"],
+];
+
+// Claude Code owns these credentials; read them but never refresh or rewrite them.
+export async function readClaudeCredentials(
+	now = Date.now(),
+	file = CLAUDE_CREDENTIALS_FILE,
+) {
+	let oauth;
+	try {
+		oauth = JSON.parse(await readFile(file, "utf8"))?.claudeAiOauth;
+	} catch {
+		throw new Error(CLAUDE_SIGN_IN_MESSAGE);
+	}
+	if (typeof oauth?.accessToken !== "string" || !oauth.accessToken)
+		throw new Error(CLAUDE_SIGN_IN_MESSAGE);
+	if (Number.isFinite(oauth.expiresAt) && oauth.expiresAt <= now)
+		throw new Error(CLAUDE_EXPIRED_MESSAGE);
+	return {
+		access: oauth.accessToken,
+		plan:
+			typeof oauth.subscriptionType === "string" ? oauth.subscriptionType : "",
+	};
+}
+
+export function normalizeClaudeUsage(body, plan = "", now = Date.now()) {
+	const windows = [];
+	for (const [key, durationSeconds, label] of CLAUDE_WINDOWS) {
+		const value = body?.[key];
+		if (value == null) continue;
+		if (
+			typeof value.utilization !== "number" ||
+			!Number.isFinite(value.utilization) ||
+			value.utilization < 0
+		)
+			throw new Error("Invalid usage percentage");
+		const parsedReset =
+			typeof value.resets_at === "string" ? Date.parse(value.resets_at) : NaN;
+		const window = {
+			id: key,
+			remainingPercent: Math.max(0, 100 - value.utilization),
+			durationSeconds,
+			resetsAt: parsedReset > 0 ? parsedReset : null,
+		};
+		if (label) window.label = label;
+		windows.push(window);
+	}
+	if (!windows.length) throw new Error("No subscription quota available");
+	return { id: "claude", name: "Claude", plan, updatedAt: now, windows };
+}
+
+export async function fetchClaudeUsage(
+	credentials,
+	{ now = Date.now(), ...options } = {},
+) {
+	return fetchUsageJson(
+		CLAUDE_USAGE_URL,
+		{
+			Authorization: `Bearer ${credentials.access}`,
+			"anthropic-beta": "oauth-2025-04-20",
+		},
+		(body) => normalizeClaudeUsage(body, credentials.plan, now),
+		options,
+	);
+}
+
+async function claudeUsageCommand() {
+	let credentials;
+	try {
+		credentials = await readClaudeCredentials();
+	} catch (error) {
+		fail(error.message);
+		return;
+	}
+	const result = await fetchClaudeUsage(credentials);
+	if (result.unauthorized) fail(CLAUDE_EXPIRED_MESSAGE);
+	else if (result.error) fail(result.error);
+	else jsonOut({ type: "usage", provider: result.provider });
+}
+
 async function main() {
 	const [command] = process.argv.slice(2);
 	try {
 		switch (command) {
 			case "usage":
 				await usageCommand();
+				break;
+			case "claude-usage":
+				await claudeUsageCommand();
 				break;
 			case "status":
 				jsonOut(publicStatusForCredentials(await getStoredCredentials()));

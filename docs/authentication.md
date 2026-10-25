@@ -4,6 +4,10 @@
 remain the interface used by `services/AiChatService.qml`. Tokens are never stored
 in chat history or emitted in status events.
 
+Claude subscription usage is the exception: `claude-usage` only reads Claude Code's
+own credentials file. It never locks, refreshes, or writes that file, so Claude Code's
+refresh token is never rotated by the shell.
+
 ## Credential transactions
 
 All credential reads and updates use an exclusive OS `flock` on `auth.json.lock`
