@@ -273,10 +273,17 @@ If you do not use `$mod`, replace it with the modifier string you use in Hyprlan
 
 ## AI subscription usage
 
-The robot chip immediately before Wi-Fi shows the lowest remaining Codex subscription
-quota for the ChatGPT account signed in through Couch AI. Click it to toggle Couch AI
-on that monitor. The hover shows the plan, each quota window, remaining percentage,
-and time until reset in days, hours, and minutes (for example, `2d 3h 15m`).
+The robot chip immediately before Wi-Fi shows the lowest remaining subscription quota
+for one AI account: ChatGPT (the Codex quota for the account signed in through Couch AI)
+or Claude (the Pro/Max quota for the account signed in to Claude Code). Click it to
+switch which account is shown; the hover title names the current one. Usage refreshes
+never change the selection. The hover shows the plan, each quota window, remaining
+percentage, and time until reset in days, hours, and minutes (for example, `2d 3h 15m`).
+
+Claude usage reuses Claude Code's login from `~/.claude/.credentials.json` (or
+`$CLAUDE_CONFIG_DIR/.credentials.json`; override with `COUCH_SHELL_CLAUDE_CREDENTIALS_FILE`).
+The file is only read: the shell never refreshes or rewrites Claude Code's token. When the
+token expires the hover asks you to open Claude Code, which refreshes it.
 
 When a quota is exhausted, the chip switches to `H:MM` until access can resume. If
 multiple windows are exhausted it uses the latest blocking reset. Minutes round up,
@@ -286,10 +293,11 @@ chip. `Unk` means no current reading; the hover explains sign-in or refresh fail
 and marks retained readings stale.
 
 Usage refreshes every 60 seconds while the bar is visible, immediately on show or
-sign-in, and when a known reset is reached. All monitors share the same request.
+sign-in, and when a known reset is reached. Both accounts refresh so switching is
+instant. All monitors share the same requests.
 Hiding the bar cancels usage work; logout clears usage. This tracks the subscription
-quota used by Codex/Couch AI, not ChatGPT website message counts or API spending.
-The ChatGPT backend usage endpoint is private and may change; unsupported responses
+quota used by Codex/Couch AI and Claude, not website message counts or API spending.
+The ChatGPT and Claude usage endpoints are private and may change; unsupported responses
 show unavailable rather than estimating a quota. See [the usage adapter contract](docs/bar.md#ai-subscription-usage)
 for extending this to other providers.
 

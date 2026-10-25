@@ -139,9 +139,11 @@ An inactive service before the first request is expected. If a failed report is 
 
 ## AI Subscription Usage
 
-`AiUsageState` owns one shared provider model and the bar-only refresh/countdown timers.
-`AiChatService` owns the cancellable helper process and reuses its existing authentication
-state. No widget owns polling or credentials. Hiding the bar cancels the helper and
+`AiUsageState` owns the shared provider models and the bar-only refresh/countdown timers.
+`AiChatService` owns the cancellable ChatGPT helper process and reuses its existing
+authentication state. `AiUsageState` owns the Claude helper process, since Claude
+authentication is independent of Couch AI. No widget owns polling or credentials.
+Hiding the bar cancels both helpers and
 stops timers; showing it refreshes immediately. Requests run every 60 seconds, with a
 25-second overall deadline and an eight-second HTTP deadline. Known resets trigger a
 refresh; an already-expired server snapshot is retried on the normal interval instead
@@ -153,12 +155,23 @@ forced token refresh and retry. Provider response bodies, credentials, and helpe
 stderr are never forwarded into usage errors. The endpoint is private; the adapter
 isolates its contract from QML. Tests use fake credentials and injected responses.
 
+`couch-ai-codex claude-usage` reads Claude Code's `claudeAiOauth` credentials without
+locking, refreshing, or writing them, and calls `GET /api/oauth/usage` on
+`api.anthropic.com` (override with `COUCH_SHELL_CLAUDE_USAGE_URL`). An expired or rejected
+token is reported as a fixed sign-in message with no retry; Claude Code refreshes it.
+`five_hour`, `seven_day`, and any non-null `seven_day_opus`/`seven_day_sonnet` windows map
+`utilization` (percent used) to `remainingPercent`. The test environment points
+`COUCH_SHELL_CLAUDE_CREDENTIALS_FILE` at a missing file so tests never use a real login.
+
 The normalized provider record has `id`, `name`, `plan`, `updatedAt` (epoch milliseconds),
 and `windows`. Each window has `id`, `remainingPercent` (unrounded 0–100),
-`durationSeconds` (nullable), and `resetsAt` (nullable epoch milliseconds). QML adds
+`durationSeconds` (nullable), `resetsAt` (nullable epoch milliseconds), and an optional
+`label` that overrides the duration-derived name. QML adds
 `status` (`idle`, `loading`, `ready`, or `error`) and `error`. Additional adapters should
-publish this model and retain their own authentication behind the service boundary;
-`providers` currently contains only `openai-codex`, the selected chip provider.
+publish this model and retain their own authentication behind the service boundary.
+`providers` contains `openai-codex` and `claude`; `selectedProviderId` picks the chip
+and hover provider. It starts as `openai-codex` and changes only through `select()` or
+`selectNext()`; usage refreshes replace provider records without touching it.
 
 The chip selects the minimum remaining percentage. Positive fractions round upward.
 At zero it counts down to the latest exhausted window's reset, provided every blocking
@@ -166,5 +179,5 @@ window has a known reset; otherwise it displays `0%`. Countdown text rounds up t
 minutes and permits hours over 24 in the chip. The hover's reset row uses days, hours,
 and minutes, such as `2d 3h 15m`. A reset never implies a replenished quota: expired,
 loading, and failed readings show `Unk`, with previous windows marked stale in the
-hover. Account changes and logout discard previous windows. The chip uses
-`PaneManager.toggleLeftTab` for its click action and the default hover animation preset.
+hover. Couch AI account changes and logout discard previous ChatGPT windows. A left
+click calls `AiUsageState.selectNext()`; the chip uses the default hover animation preset.

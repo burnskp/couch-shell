@@ -18,6 +18,6 @@ Components.WidgetChip {
 
     onClicked: button => {
         if (button === Qt.LeftButton)
-            Services.PaneManager.toggleLeftTab(root.barScreen, Services.PaneManager.leftTabCouchAi);
+            Services.AiUsageState.selectNext();
     }
 }

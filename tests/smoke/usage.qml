@@ -68,17 +68,42 @@ ShellRoot {
             } else if (root.phase === 3) {
                 if (root.ticks < 10)
                     return;
-                if (service.usageBusy || service.requestUsage() || root.lateUsage) {
+                if (service.usageBusy || service.requestUsage() || root.lateUsage || state.claudeBusy) {
                     root.fail("Hidden work or late output survived cancellation");
                     return;
                 }
                 root.phase = 4;
                 Services.BarManager.show();
             } else if (root.phase === 4) {
-                if (state.provider.status !== "ready" || service.usageBusy)
+                if (state.provider.status !== "ready" || service.usageBusy || state.providerById("claude").status !== "ready")
                     return;
                 if (firstWidget.valueText !== "70%") {
                     root.fail("Show did not refresh usage");
+                    return;
+                }
+                const codexGlyph = firstWidget.iconGlyph;
+                state.selectNext();
+                if (firstWidget.valueText !== "40%" || secondWidget.valueText !== "40%" || firstWidget.iconGlyph !== codexGlyph || state.title !== "Claude") {
+                    root.fail("Switching did not show Claude usage: " + firstWidget.valueText);
+                    return;
+                }
+                // Refreshing usage must not change the selected provider.
+                state.refreshClaude();
+                if (!state.claudeBusy || state.selectedProviderId !== "claude") {
+                    root.fail("Claude refresh did not start or changed the selection");
+                    return;
+                }
+                root.phase = 9;
+            } else if (root.phase === 9) {
+                if (state.claudeBusy || state.provider.status !== "ready")
+                    return;
+                if (state.selectedProviderId !== "claude" || firstWidget.valueText !== "40%") {
+                    root.fail("Claude refresh switched the shown provider");
+                    return;
+                }
+                state.selectNext();
+                if (firstWidget.valueText !== "70%" || state.selectedProviderId !== "openai-codex") {
+                    root.fail("Switching back did not show ChatGPT usage");
                     return;
                 }
                 service.applyStatus({ configured: true, accountId: "replacement" });

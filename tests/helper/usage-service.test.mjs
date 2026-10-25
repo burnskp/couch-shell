@@ -46,7 +46,8 @@ else if (command === 'usage') {
         process.on('SIGTERM', () => { report(); console.error('late usage stderr'); clearInterval(timer); });
     } else if (count === 5) process.exitCode = 1;
     else setTimeout(report, 100);
-} else if (command === 'logout') setTimeout(() => emit({type:'logout_complete'}), 100);
+} else if (command === 'claude-usage') setTimeout(() => emit({type:'usage', provider:{id:'claude', name:'Claude', plan:'pro', updatedAt:Date.now(), windows:[{id:'five_hour', remainingPercent:40, durationSeconds:18000, resetsAt:Date.now() + 600000}]}}), 100);
+else if (command === 'logout') setTimeout(() => emit({type:'logout_complete'}), 100);
 `,
 		{ mode: 0o700 },
 	);

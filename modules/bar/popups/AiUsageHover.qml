@@ -12,7 +12,7 @@ Components.HoverPopupFrame {
 
     Components.HoverPopupCard {
         Components.HoverPopupKeyValueRow {
-            label: "ChatGPT · Codex"
+            label: Services.AiUsageState.title
             labelColumnWidth: 150
             value: Services.AiUsageState.provider.plan
         }

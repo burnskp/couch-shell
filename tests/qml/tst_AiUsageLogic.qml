@@ -47,5 +47,6 @@ TestCase {
         compare(Logic.windowLabel({ durationSeconds: 18000 }), "5 hours");
         compare(Logic.windowLabel({ durationSeconds: 604800 }), "1 week");
         compare(Logic.windowLabel({ id: "primary_window" }), "Primary limit");
+        compare(Logic.windowLabel({ durationSeconds: 604800, label: "Opus week" }), "Opus week");
     }
 }

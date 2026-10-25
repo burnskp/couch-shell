@@ -22,6 +22,7 @@ function resetDuration(resetsAt, now) {
 }
 
 function windowLabel(window) {
+	if (window.label) return window.label;
 	const seconds = window.durationSeconds;
 	if (!(seconds > 0))
 		return window.id === "primary_window" ? "Primary limit" : "Secondary limit";
