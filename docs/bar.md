@@ -144,7 +144,8 @@ An inactive service before the first request is expected. If a failed report is 
 authentication state. `AiUsageState` owns the Claude helper process, since Claude
 authentication is independent of Couch AI. No widget owns polling or credentials.
 Hiding the bar cancels both helpers and
-stops timers; showing it refreshes immediately. Requests run every 60 seconds, with a
+stops timers; showing it refreshes immediately. Requests run every `ShellConfig.aiUsageRefreshInterval` seconds (the
+`bar.aiUsage.refreshInterval` Nix option, default 300), with a
 25-second overall deadline and an eight-second HTTP deadline. Known resets trigger a
 refresh; an already-expired server snapshot is retried on the normal interval instead
 of causing a tight loop.
@@ -170,7 +171,8 @@ and `windows`. Each window has `id`, `remainingPercent` (unrounded 0–100),
 `status` (`idle`, `loading`, `ready`, or `error`) and `error`. Additional adapters should
 publish this model and retain their own authentication behind the service boundary.
 `providers` contains `openai-codex` and `claude`; `selectedProviderId` picks the chip
-and hover provider. It starts as `openai-codex` and changes only through `select()` or
+and hover provider. It starts from `ShellConfig.aiUsageDefaultProvider` (the
+`bar.aiUsage.defaultProvider` Nix option) and changes only through `select()` or
 `selectNext()`; usage refreshes replace provider records without touching it.
 
 The chip selects the minimum remaining percentage. Positive fractions round upward.

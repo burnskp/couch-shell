@@ -12,7 +12,7 @@ Item {
     // Every provider publishes the same provider/window model; auth stays with each provider.
     property var providers: [emptyProvider("openai-codex", "ChatGPT"), emptyProvider("claude", "Claude")]
     // Only select() changes this; usage refreshes replace provider records but keep the selection.
-    property string selectedProviderId: "openai-codex"
+    property string selectedProviderId: Services.ShellConfig.aiUsageDefaultProvider === "claude" ? "claude" : "openai-codex"
     readonly property var provider: providerById(selectedProviderId)
     readonly property string title: provider.id === "claude" ? "Claude" : "ChatGPT · Codex"
     property real now: Date.now()
@@ -193,7 +193,7 @@ Item {
     }
 
     Timer {
-        interval: 60000
+        interval: Services.ShellConfig.aiUsageRefreshInterval * 1000
         running: Services.BarManager.visible
         repeat: true
         onTriggered: {

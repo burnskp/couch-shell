@@ -43,6 +43,10 @@
         };
         bar = {
           height = 20;
+          aiUsage = {
+            defaultProvider = "chatgpt";
+            refreshInterval = 300;
+          };
           disk = {
             btrfs = {
               enable = false;

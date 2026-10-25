@@ -27,7 +27,7 @@ let
       inherit (cfg.theme) flavor;
     };
     bar = {
-      inherit (cfg.bar) height disk;
+      inherit (cfg.bar) height disk aiUsage;
       temperature = {
         inherit (cfg.bar.temperature)
           enable
@@ -132,6 +132,23 @@ in
         type = lib.types.ints.positive;
         default = defaults.bar.height;
         description = "Height of the top bar in pixels.";
+      };
+
+      aiUsage = {
+        defaultProvider = lib.mkOption {
+          type = lib.types.enum [
+            "chatgpt"
+            "claude"
+          ];
+          default = defaults.bar.aiUsage.defaultProvider;
+          description = "AI subscription shown in the bar usage chip when the shell starts. Clicking the chip switches it until the next restart.";
+        };
+
+        refreshInterval = lib.mkOption {
+          type = lib.types.ints.positive;
+          default = defaults.bar.aiUsage.refreshInterval;
+          description = "Seconds between visible-bar AI subscription usage requests.";
+        };
       };
 
       disk = {

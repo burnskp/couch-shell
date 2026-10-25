@@ -88,6 +88,8 @@ The Home Manager runtime configuration surface is intentionally small:
 - `bar.disk.btrfs.enable` (default `false`)
 - `bar.disk.btrfs.pollInterval` (default `300` seconds)
 - `bar.height`
+- `bar.aiUsage.defaultProvider` (`chatgpt` or `claude`, default `chatgpt`)
+- `bar.aiUsage.refreshInterval` (default `300` seconds)
 - `bar.temperature.enable`
 - `bar.temperature.textPath`
 - `bar.temperature.popupPaths`
@@ -277,7 +279,14 @@ The robot chip immediately before Wi-Fi shows the lowest remaining subscription 
 for one AI account: ChatGPT (the Codex quota for the account signed in through Couch AI)
 or Claude (the Pro/Max quota for the account signed in to Claude Code). Click it to
 switch which account is shown; the hover title names the current one. Usage refreshes
-never change the selection. The hover shows the plan, each quota window, remaining
+never change the selection. On startup the chip shows `bar.aiUsage.defaultProvider`:
+
+```nix
+programs.couch-shell.bar.aiUsage.defaultProvider = "claude"; # or "chatgpt" (default)
+programs.couch-shell.bar.aiUsage.refreshInterval = 120; # seconds, default 300
+```
+
+The hover shows the plan, each quota window, remaining
 percentage, and time until reset in days, hours, and minutes (for example, `2d 3h 15m`).
 
 Claude usage reuses Claude Code's login from `~/.claude/.credentials.json` (or
@@ -292,7 +301,8 @@ round up; only an exhausted quota displays zero. A missing reset leaves `0%` in 
 chip. `Unk` means no current reading; the hover explains sign-in or refresh failures
 and marks retained readings stale.
 
-Usage refreshes every 60 seconds while the bar is visible, immediately on show or
+Usage refreshes every `bar.aiUsage.refreshInterval` seconds (default `300`, five
+minutes) while the bar is visible, immediately on show or
 sign-in, and when a known reset is reached. Both accounts refresh so switching is
 instant. All monitors share the same requests.
 Hiding the bar cancels usage work; logout clears usage. This tracks the subscription

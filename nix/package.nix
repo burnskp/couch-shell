@@ -29,6 +29,10 @@
   },
   bar ? {
     height = 20;
+    aiUsage = {
+      defaultProvider = "chatgpt";
+      refreshInterval = 300;
+    };
     disk = {
       btrfs = {
         enable = false;
@@ -98,6 +102,12 @@ let
   escapeQmlString = value: lib.replaceStrings [ "\\" "\"" ] [ "\\\\" "\\\"" ] value;
   fontSize = normalizedFonts.size;
   barHeight = lib.attrByPath [ "height" ] 20 bar;
+  aiUsageProviders = [
+    "chatgpt"
+    "claude"
+  ];
+  aiUsageDefaultProvider = lib.attrByPath [ "aiUsage" "defaultProvider" ] "chatgpt" bar;
+  aiUsageRefreshInterval = lib.attrByPath [ "aiUsage" "refreshInterval" ] 300 bar;
   btrfsInterval = lib.attrByPath [ "disk" "btrfs" "pollInterval" ] 300 bar;
   warningThresholdGiB = lib.attrByPath [ "disk" "warningThresholdGiB" ] 50 bar;
   criticalThresholdGiB = lib.attrByPath [ "disk" "criticalThresholdGiB" ] 10 bar;
@@ -143,6 +153,11 @@ let
 in
 assert lib.assertMsg (lib.elem normalizedTheme.flavor catppuccinFlavors)
   "couch-shell: theme.flavor must be one of ${lib.concatStringsSep ", " catppuccinFlavors}";
+assert lib.assertMsg (lib.elem aiUsageDefaultProvider aiUsageProviders)
+  "couch-shell: bar.aiUsage.defaultProvider must be one of ${lib.concatStringsSep ", " aiUsageProviders}";
+assert lib.assertMsg (
+  builtins.isInt aiUsageRefreshInterval && aiUsageRefreshInterval > 0
+) "couch-shell: bar.aiUsage.refreshInterval must be a positive integer";
 assert lib.assertMsg (
   builtins.isInt btrfsInterval && btrfsInterval > 0
 ) "couch-shell: bar.disk.btrfs.pollInterval must be a positive integer";
@@ -223,6 +238,8 @@ stdenvNoCC.mkDerivation {
       --replace-fail '__BTRFS_CLIENT__' "$out/bin/couch-shell-btrfs-client" \
       --replace-fail '__BAR_DISK_JSON__' ${lib.escapeShellArg (escapeQmlString diskJson)} \
       --replace-fail '__BAR_HEIGHT__' '${toString barHeight}' \
+      --replace-fail '__AI_USAGE_DEFAULT_PROVIDER__' '${aiUsageDefaultProvider}' \
+      --replace-fail '__AI_USAGE_REFRESH_INTERVAL__' '${toString aiUsageRefreshInterval}' \
       --replace-fail '__BAR_TEMPERATURE_ENABLE__' '${
         if bar.temperature.enable then "true" else "false"
       }' \
