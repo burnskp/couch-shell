@@ -22,28 +22,25 @@ Components.HoverPopupFrame {
     readonly property var clusterSections: [
         {
             "title": "Performance",
-            "accent": Theme.Theme.peach,
             "cores": root.performanceCores
         },
         {
             "title": "Efficient",
-            "accent": Theme.Theme.blue,
             "cores": root.efficientCores
         },
         {
             "title": "Low Power",
-            "accent": Theme.Theme.teal,
             "cores": root.lowPowerCores
         },
         {
             "title": "Other",
-            "accent": Theme.Theme.barAccent,
             "cores": root.fallbackCores
         }
     ]
     readonly property var visibleClusterSections: root.clusterSections.filter((section) => section.cores.length > 0)
 
     minPopupWidth: 275
+    contentSpacing: Theme.Theme.listGap + 2
 
     function averageUsage(cores) {
         if (!cores || cores.length === 0)
@@ -52,76 +49,69 @@ Components.HoverPopupFrame {
         return Math.round(cores.reduce((sum, core) => sum + core.usagePercent, 0) / cores.length);
     }
 
-    ColumnLayout {
-        Layout.fillWidth: true
-        spacing: 6
+    FontMetrics {
+        id: clusterLabelMetrics
 
-        Repeater {
-            model: root.visibleClusterSections
+        font.family: Theme.Theme.fontFamily
+        font.pixelSize: Theme.Theme.fontSize
+        font.weight: Font.Bold
+    }
 
-            delegate: Components.HoverPopupCard {
-                id: clusterCard
+    Repeater {
+        model: root.visibleClusterSections
 
-                required property var modelData
+        delegate: ColumnLayout {
+            id: clusterSection
 
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
+            required property var modelData
 
-                    Text {
-                        Layout.fillWidth: true
-                        text: clusterCard.modelData.title
-                        font.family: Theme.Theme.fontFamily
-                        font.pixelSize: Theme.Theme.fontSize
-                        font.weight: Font.Bold
-                        color: Theme.Theme.text
-                    }
+            Layout.fillWidth: true
+            spacing: Theme.Theme.listGap
 
-                    Text {
-                        text: root.averageUsage(clusterCard.modelData.cores) + "%"
-                        font.family: Theme.Theme.fontFamily
-                        font.pixelSize: Theme.Theme.fontSize
-                        font.weight: Font.Bold
-                        color: Theme.Theme.text
-                    }
-                }
+            Components.HoverPopupMeterRow {
+                iconText: "󰘚"
+                label: clusterSection.modelData.title
+                // One character of padding matches the label-to-bar gap on the other hovers.
+                labelColumnWidth: Math.ceil(clusterLabelMetrics.advanceWidth("Performance") + clusterLabelMetrics.advanceWidth(" "))
+                valueText: root.averageUsage(clusterSection.modelData.cores) + "%"
+                barValue: root.averageUsage(clusterSection.modelData.cores) / 100
+            }
 
-                Flow {
-                    id: coreFlow
+            // A single-core cluster is fully described by its title bar.
+            Flow {
+                id: coreFlow
 
-                    Layout.fillWidth: true
-                    spacing: 6
+                visible: clusterSection.modelData.cores.length > 1
+                Layout.fillWidth: true
+                spacing: 6
 
-                    Repeater {
-                        model: clusterCard.modelData.cores
+                Repeater {
+                    model: clusterSection.modelData.cores
 
-                        delegate: Components.HoverPopupMetricBar {
-                            id: coreChip
+                    delegate: Components.HoverPopupMetricBar {
+                        id: coreChip
 
-                            required property var modelData
+                        required property var modelData
 
-                            width: Math.floor((coreFlow.width - coreFlow.spacing) / 2)
-                            barHeight: (Theme.Theme.indicatorThickness + 5) * 2
-                            value: coreChip.modelData.usagePercent / 100
-                            fillColor: clusterCard.modelData.accent
+                        width: Math.floor((coreFlow.width - coreFlow.spacing) / 2)
+                        value: coreChip.modelData.usagePercent / 100
 
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 6
-                                anchors.rightMargin: 6
-                                spacing: 6
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 6
+                            anchors.rightMargin: 6
+                            spacing: 6
 
-                                Item {
-                                    Layout.fillWidth: true
-                                }
+                            Item {
+                                Layout.fillWidth: true
+                            }
 
-                                Text {
-                                    text: coreChip.modelData.usagePercent + "%"
-                                    font.family: Theme.Theme.fontFamily
-                                    font.pixelSize: Theme.Theme.fontSize - 3
-                                    font.weight: Font.Bold
-                                    color: Theme.Theme.text
-                                }
+                            Text {
+                                text: coreChip.modelData.usagePercent + "%"
+                                font.family: Theme.Theme.fontFamily
+                                font.pixelSize: Theme.Theme.fontSize - 3
+                                font.weight: Font.Bold
+                                color: Theme.Theme.popupValue
                             }
                         }
                     }
@@ -129,6 +119,8 @@ Components.HoverPopupFrame {
             }
         }
     }
+
+    Components.HoverPopupDivider {}
 
     ColumnLayout {
         Layout.fillWidth: true

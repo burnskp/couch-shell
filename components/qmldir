@@ -4,6 +4,8 @@ singleton HoverPopupPresets 1.0 HoverPopupPresets.qml
 DigitalClock 1.0 DigitalClock.qml
 HoverPopupDivider 1.0 HoverPopupDivider.qml
 HoverPopupFrame 1.0 HoverPopupFrame.qml
+HoverPopupMeterRow 1.0 HoverPopupMeterRow.qml
+HoverPopupMetricBar 1.0 HoverPopupMetricBar.qml
 HoverPopupKeyValueRow 1.0 HoverPopupKeyValueRow.qml
 HoverPopupProcessRow 1.0 HoverPopupProcessRow.qml
 ModuleChip 1.0 ModuleChip.qml

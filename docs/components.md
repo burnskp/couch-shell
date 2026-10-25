@@ -146,7 +146,6 @@ Use it for:
 
 - widget popups in `modules/bar/popups/`
 - small hover information popups
-- popup cards that should match the shell's current bar popup language
 
 Important properties:
 
@@ -160,31 +159,18 @@ Minimal pattern:
 Components.HoverPopupFrame {
     minPopupWidth: 275
 
-    Rectangle {
-        Layout.fillWidth: true
-        implicitHeight: 48
-        color: Theme.Theme.surface0
+    contentSpacing: Theme.Theme.listGap + 2
+
+    Components.HoverPopupMeterRow {
+        iconText: "󰍛"
+        label: "Memory"
+        valueText: "42%"
+        barValue: 0.42
     }
 }
 ```
 
 This component gives you the outer popup shell.
-
-### `Components.HoverPopupCard`
-
-Shared inner card shell for bar hover popups.
-
-Use it for:
-
-- the square inner cards inside `modules/bar/popups/`
-- popup sections that need the standard surface, border, and inner padding
-
-Important properties:
-
-- default `contentData`
-- `contentSpacing`
-- `contentMargin`
-- `extraHeight` when a popup needs a small height adjustment without reintroducing a custom shell
 
 ## Popup Presets
 
@@ -232,9 +218,29 @@ Use a custom override only when the popup genuinely needs behavior outside the c
 
 ## Popup Rows
 
+### `Components.HoverPopupMeterRow`
+
+The standard row for bar hover popups: `[icon | label | metric bar | value]` with an optional detail line underneath. All the popups in `modules/bar/popups/` are built from it, and `TemperatureHover.qml` is the reference layout.
+
+Use it for:
+
+- metric rows with a normalized bar (temperature, volume, memory, quota)
+- label/value rows without a bar (`showBar: false`); the label then takes the free width
+- list entries with a subtitle (active audio streams)
+
+Important properties:
+
+- `iconText`, `iconColor`
+- `label`, `labelElide`
+- `valueText`
+- `showBar`, `barValue` from `0` to `1`, `fillColor`
+- `detail`, `detailWrap`
+- `labelColumnWidth`, `valueColumnWidth`, `iconColumnWidth` (defaults `52`, the width of `100%`, `22`; Temperature uses `48` for `°C` values); widen the label column with `FontMetrics` when labels are longer, adding one space's width so the gap before the bar matches the other hovers; set `iconColumnWidth: 0` for rows without an icon
+- `detailIndent` (read-only) for aligning extra content such as the CPU core grid under the label column
+
 ### `Components.HoverPopupKeyValueRow`
 
-Preferred label/value row for popup cards.
+Compact label/value row for dense popup sub-lists, such as btrfs snapshots. Prefer `HoverPopupMeterRow` for top-level popup rows.
 
 Use this for bar hover popups in `modules/bar/popups/`.
 

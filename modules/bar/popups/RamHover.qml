@@ -10,85 +10,41 @@ Components.HoverPopupFrame {
     id: root
 
     minPopupWidth: 275
+    contentSpacing: Theme.Theme.listGap + 2
 
     readonly property var memorySections: [
         {
+            "icon": "󰍛",
             "title": "Memory",
-            "accent": Theme.Theme.popupFill,
             "percent": Services.SystemStatsState.memoryPercent,
-            "summary": Services.SystemStatsState.formatGib(Services.SystemStatsState.memoryUsedBytes) + " / " + Services.SystemStatsState.memoryAvailableLabel,
+            "summary": Services.SystemStatsState.formatGib(Services.SystemStatsState.memoryUsedBytes) + " used / " + Services.SystemStatsState.memoryAvailableLabel + " free",
             "visible": true
         },
         {
+            "icon": "󰾴",
             "title": "Swap",
-            "accent": Theme.Theme.popupFill,
             "percent": Services.SystemStatsState.swapPercent,
-            "summary": Services.SystemStatsState.formatGib(Services.SystemStatsState.swapUsedBytes) + " / " + Services.SystemStatsState.formatGib(Math.max(Services.SystemStatsState.swapTotalBytes - Services.SystemStatsState.swapUsedBytes, 0)),
+            "summary": Services.SystemStatsState.formatGib(Services.SystemStatsState.swapUsedBytes) + " used / " + Services.SystemStatsState.formatGib(Math.max(Services.SystemStatsState.swapTotalBytes - Services.SystemStatsState.swapUsedBytes, 0)) + " free",
             "visible": Services.SystemStatsState.swapTotalBytes > 0
         }
     ]
     readonly property var visibleMemorySections: root.memorySections.filter((section) => section.visible)
 
-    ColumnLayout {
-        Layout.fillWidth: true
-        spacing: 6
+    Repeater {
+        model: root.visibleMemorySections
 
-        Repeater {
-            model: root.visibleMemorySections
+        delegate: Components.HoverPopupMeterRow {
+            required property var modelData
 
-            delegate: Components.HoverPopupCard {
-                id: memoryCard
-
-                required property var modelData
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 6
-
-                    Text {
-                        Layout.fillWidth: true
-                        text: memoryCard.modelData.title
-                        font.family: Theme.Theme.fontFamily
-                        font.pixelSize: Theme.Theme.fontSize
-                        font.weight: Font.Bold
-                        color: Theme.Theme.text
-                    }
-
-                    Text {
-                        text: memoryCard.modelData.summary
-                        font.family: Theme.Theme.fontFamily
-                        font.pixelSize: Theme.Theme.fontSize - 1
-                        font.weight: Font.Bold
-                        color: Theme.Theme.text
-                    }
-                }
-
-                Components.HoverPopupMetricBar {
-                    value: memoryCard.modelData.percent / 100
-                    fillColor: memoryCard.modelData.accent
-
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.leftMargin: 6
-                        anchors.rightMargin: 6
-                        spacing: 6
-
-                        Item {
-                            Layout.fillWidth: true
-                        }
-
-                        Text {
-                            text: memoryCard.modelData.percent + "%"
-                            font.family: Theme.Theme.fontFamily
-                            font.pixelSize: Theme.Theme.fontSize - 3
-                            font.weight: Font.Bold
-                            color: Theme.Theme.text
-                        }
-                    }
-                }
-            }
+            iconText: modelData.icon
+            label: modelData.title
+            valueText: modelData.percent + "%"
+            barValue: modelData.percent / 100
+            detail: modelData.summary
         }
     }
+
+    Components.HoverPopupDivider {}
 
     ColumnLayout {
         Layout.fillWidth: true

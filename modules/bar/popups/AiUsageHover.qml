@@ -8,61 +8,55 @@ import "../../../services/AiUsageLogic.js" as Logic
 import "../../../theme" as Theme
 
 Components.HoverPopupFrame {
+    id: root
+
     minPopupWidth: 275
+    contentSpacing: Theme.Theme.listGap + 2
+
+    FontMetrics {
+        id: windowLabelMetrics
+
+        font.family: Theme.Theme.fontFamily
+        font.pixelSize: Theme.Theme.fontSize
+        font.weight: Font.Bold
+    }
 
     Repeater {
         model: Services.AiUsageState.hoverProviders
-        delegate: Components.HoverPopupCard {
-            id: providerCard
+        delegate: ColumnLayout {
+            id: providerSection
             required property var modelData
+            required property int index
             readonly property bool stale: Services.AiUsageState.providerStale(modelData)
 
-            Components.HoverPopupKeyValueRow {
-                label: Services.AiUsageState.providerTitle(providerCard.modelData)
-                labelColumnWidth: 150
-                value: providerCard.modelData.plan
-            }
-            Text {
-                Layout.fillWidth: true
-                visible: text.length > 0
-                text: Services.AiUsageState.providerMessage(providerCard.modelData)
-                textFormat: Text.PlainText
-                wrapMode: Text.WordWrap
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize - 1
-                color: Theme.Theme.subtext0
+            Layout.fillWidth: true
+            spacing: root.contentSpacing
+
+            Components.HoverPopupDivider { visible: providerSection.index > 0 }
+
+            Components.HoverPopupMeterRow {
+                iconColumnWidth: 0
+                label: Services.AiUsageState.providerTitle(providerSection.modelData)
+                valueText: providerSection.modelData.plan
+                showBar: false
+                detail: Services.AiUsageState.providerMessage(providerSection.modelData)
+                detailWrap: true
             }
 
-            Components.HoverPopupDivider { visible: providerCard.modelData.windows.length > 0 }
-            // Spacing, not dividers, separates quota windows within one provider.
-            ColumnLayout {
-                Layout.fillWidth: true
-                spacing: 10
+            Repeater {
+                model: providerSection.modelData.windows
+                delegate: Components.HoverPopupMeterRow {
+                    required property var modelData
+                    // The section can be torn down before its window rows on provider changes.
+                    readonly property bool stale: providerSection !== null && providerSection.stale
 
-                Repeater {
-                    model: providerCard.modelData.windows
-                    delegate: ColumnLayout {
-                        id: quotaSection
-                        required property var modelData
-
-                        Layout.fillWidth: true
-                        spacing: providerCard.contentSpacing
-
-                        Components.HoverPopupKeyValueRow {
-                            label: Logic.windowLabel(quotaSection.modelData)
-                            labelColumnWidth: 95
-                            value: Logic.percentage(quotaSection.modelData.remainingPercent) + " left"
-                        }
-                        Components.HoverPopupMetricBar {
-                            value: quotaSection.modelData.remainingPercent / 100
-                            fillColor: quotaSection.modelData.remainingPercent === 0 ? Theme.Theme.red : Theme.Theme.popupFill
-                        }
-                        Components.HoverPopupKeyValueRow {
-                            label: providerCard.stale ? "Reset (stale)" : "Resets in"
-                            labelColumnWidth: 95
-                            value: Logic.resetDuration(quotaSection.modelData.resetsAt, Services.AiUsageState.now)
-                        }
-                    }
+                    iconColumnWidth: 0
+                    labelColumnWidth: Math.ceil(windowLabelMetrics.advanceWidth("Primary limit") + windowLabelMetrics.advanceWidth(" "))
+                    label: Logic.windowLabel(modelData)
+                    valueText: Logic.percentage(modelData.remainingPercent)
+                    barValue: modelData.remainingPercent / 100
+                    fillColor: modelData.remainingPercent === 0 ? Theme.Theme.red : Theme.Theme.popupFill
+                    detail: (stale ? "Reset (stale) " : "Resets in ") + Logic.resetDuration(modelData.resetsAt, Services.AiUsageState.now)
                 }
             }
         }

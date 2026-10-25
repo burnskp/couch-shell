@@ -30,7 +30,7 @@ RowLayout {
         font.family: Theme.Theme.fontFamily
         font.pixelSize: root.labelPixelSize
         font.weight: Font.Bold
-        color: Theme.Theme.text
+        color: Theme.Theme.popupLabel
     }
 
     Item {
@@ -48,6 +48,6 @@ RowLayout {
         font.family: Theme.Theme.fontFamily
         font.pixelSize: root.valuePixelSize
         font.weight: Font.Bold
-        color: Theme.Theme.text
+        color: Theme.Theme.popupValue
     }
 }

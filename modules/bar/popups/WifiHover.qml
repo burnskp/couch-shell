@@ -10,8 +10,9 @@ Components.HoverPopupFrame {
     id: root
 
     minPopupWidth: 275
+    contentSpacing: Theme.Theme.listGap + 2
 
-    readonly property string connectionSummary: Services.NetworkState.bandLabel + " / " + Services.NetworkState.speedLabel + " / " + Services.NetworkState.strengthLabel
+    readonly property string connectionSummary: root.interfaceLabel + " · " + Services.NetworkState.bandLabel + " / " + Services.NetworkState.speedLabel
     readonly property string txRateLabel: Services.NetworkState.connected ? Services.NetworkState.formatRate(Services.NetworkState.txRateBytesPerSecond) : "--"
     readonly property string rxRateLabel: Services.NetworkState.connected ? Services.NetworkState.formatRate(Services.NetworkState.rxRateBytesPerSecond) : "--"
     readonly property string interfaceLabel: Services.NetworkState.interfaceName.length > 0 ? Services.NetworkState.interfaceName : "--"
@@ -49,167 +50,102 @@ Components.HoverPopupFrame {
         ctx.stroke();
     }
 
-    Components.HoverPopupCard {
-        extraHeight: 2
-        contentSpacing: 5
+    Components.HoverPopupMeterRow {
+        iconText: Services.NetworkState.iconGlyph
+        label: "Signal"
+        valueText: Services.NetworkState.strengthLabel
+        barValue: Services.NetworkState.connected ? Services.NetworkState.signalPercent / 100 : 0
+        detail: root.connectionSummary
+    }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
+    Components.HoverPopupDivider {}
 
-            Text {
-                Layout.fillWidth: true
-                text: "Connection"
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize
-                font.weight: Font.Bold
-                color: Theme.Theme.text
-            }
+    Rectangle {
+        Layout.fillWidth: true
+        implicitHeight: 66
+        radius: 0
+        color: Theme.Theme.popupTrack
 
-            Text {
-                text: root.interfaceLabel
-                Layout.preferredWidth: 88
-                Layout.maximumWidth: 88
-                elide: Text.ElideLeft
-                horizontalAlignment: Text.AlignRight
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize - 1
-                font.weight: Font.Bold
-                color: Theme.Theme.subtext0
+        Repeater {
+            model: 3
+
+            delegate: Rectangle {
+                required property int index
+
+                width: parent.width
+                height: 1
+                x: 0
+                y: ((index + 1) * parent.height) / 4
+                color: Theme.Theme.surface0
+                opacity: 0.55
             }
         }
 
-        Text {
-            Layout.fillWidth: true
-            text: root.connectionSummary
-            elide: Text.ElideRight
-            font.family: Theme.Theme.fontFamily
-            font.pixelSize: Theme.Theme.fontSize - 2
-            font.weight: Font.Bold
-            color: Theme.Theme.subtext1
+        Canvas {
+            id: trafficCanvas
+
+            anchors.fill: parent
+
+            onPaint: {
+                const ctx = getContext("2d");
+                ctx.reset();
+
+                const peak = root.graphPeakValue();
+                root.drawSeries(ctx, Services.NetworkState.rxRateHistory, width, height, peak, Theme.Theme.lavender);
+                root.drawSeries(ctx, Services.NetworkState.txRateHistory, width, height, peak, Theme.Theme.popupFill);
+            }
+
+            Connections {
+                target: Services.NetworkState
+
+                function onRxRateHistoryChanged() {
+                    trafficCanvas.requestPaint();
+                }
+
+                function onTxRateHistoryChanged() {
+                    trafficCanvas.requestPaint();
+                }
+            }
+        }
+
+    }
+
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Theme.Theme.listGap * 4
+
+        Components.HoverPopupMeterRow {
+            // Equal preferred widths split the line evenly between Up and Down.
+            Layout.preferredWidth: 1
+            iconText: "󰕒"
+            label: "Up"
+            valueText: root.txRateLabel
+            showBar: false
+        }
+
+        Components.HoverPopupMeterRow {
+            Layout.preferredWidth: 1
+            iconText: "󰇚"
+            iconColor: Theme.Theme.lavender
+            label: "Down"
+            valueText: root.rxRateLabel
+            showBar: false
         }
     }
 
-    Components.HoverPopupCard {
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 8
+    Components.HoverPopupDivider {}
 
-            Text {
-                Layout.fillWidth: true
-                text: "Traffic Monitor"
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize
-                font.weight: Font.Bold
-                color: Theme.Theme.text
-            }
-
-            Text {
-                text: "Up"
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize - 1
-                font.weight: Font.Bold
-                color: Theme.Theme.popupIcon
-            }
-
-            Text {
-                text: root.txRateLabel
-                Layout.minimumWidth: 54
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize - 1
-                font.weight: Font.Bold
-                color: Theme.Theme.text
-                horizontalAlignment: Text.AlignRight
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 8
-
-            Item {
-                Layout.fillWidth: true
-            }
-
-            Text {
-                text: "Down"
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize - 1
-                font.weight: Font.Bold
-                color: Theme.Theme.lavender
-            }
-
-            Text {
-                text: root.rxRateLabel
-                Layout.minimumWidth: 54
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize - 1
-                font.weight: Font.Bold
-                color: Theme.Theme.text
-                horizontalAlignment: Text.AlignRight
-            }
-        }
-
-        Rectangle {
-            Layout.fillWidth: true
-            implicitHeight: 66
-            radius: 0
-            color: Theme.Theme.popupTrack
-
-            Repeater {
-                model: 3
-
-                delegate: Rectangle {
-                    required property int index
-
-                    width: parent.width
-                    height: 1
-                    x: 0
-                    y: ((index + 1) * parent.height) / 4
-                    color: Theme.Theme.surface0
-                    opacity: 0.55
-                }
-            }
-
-            Canvas {
-                id: trafficCanvas
-
-                anchors.fill: parent
-
-                onPaint: {
-                    const ctx = getContext("2d");
-                    ctx.reset();
-
-                    const peak = root.graphPeakValue();
-                    root.drawSeries(ctx, Services.NetworkState.rxRateHistory, width, height, peak, Theme.Theme.lavender);
-                    root.drawSeries(ctx, Services.NetworkState.txRateHistory, width, height, peak, Theme.Theme.popupFill);
-                }
-
-                Connections {
-                    target: Services.NetworkState
-
-                    function onRxRateHistoryChanged() {
-                        trafficCanvas.requestPaint();
-                    }
-
-                    function onTxRateHistoryChanged() {
-                        trafficCanvas.requestPaint();
-                    }
-                }
-            }
-
-        }
+    Components.HoverPopupMeterRow {
+        iconText: "󰁝"
+        label: "Tx Total"
+        valueText: Services.NetworkState.connected ? Services.NetworkState.formatBytes(Services.NetworkState.sessionTxBytes) : "--"
+        showBar: false
     }
 
-    Components.HoverPopupCard {
-        Components.HoverPopupKeyValueRow {
-            label: "Tx Total"
-            value: Services.NetworkState.connected ? Services.NetworkState.formatBytes(Services.NetworkState.sessionTxBytes) : "--"
-        }
-
-        Components.HoverPopupKeyValueRow {
-            label: "Rx Total"
-            value: Services.NetworkState.connected ? Services.NetworkState.formatBytes(Services.NetworkState.sessionRxBytes) : "--"
-        }
+    Components.HoverPopupMeterRow {
+        iconText: "󰁅"
+        label: "Rx Total"
+        valueText: Services.NetworkState.connected ? Services.NetworkState.formatBytes(Services.NetworkState.sessionRxBytes) : "--"
+        showBar: false
     }
 }

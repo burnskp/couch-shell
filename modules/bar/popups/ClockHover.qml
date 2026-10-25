@@ -33,110 +33,69 @@ Components.HoverPopupFrame {
         return cells;
     }
 
-    contentSpacing: 6
+    contentSpacing: Theme.Theme.listGap + 2
     minPopupWidth: 275
 
-    Components.HoverPopupCard {
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
-
-            Text {
-                Layout.fillWidth: true
-                text: "Today"
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize
-                font.weight: Font.Bold
-                color: Theme.Theme.text
-            }
-
-            Text {
-                text: popup.weekdayText
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize
-                font.weight: Font.Bold
-                color: Theme.Theme.text
-            }
-        }
-
-        Text {
-            Layout.fillWidth: true
-            text: popup.longDateText
-            font.family: Theme.Theme.fontFamily
-            font.pixelSize: Theme.Theme.fontSize - 1
-            font.weight: Font.Bold
-            color: Theme.Theme.subtext0
-        }
+    Components.HoverPopupMeterRow {
+        iconText: "󰃭"
+        label: "Today"
+        valueText: popup.weekdayText
+        showBar: false
+        detail: popup.longDateText
     }
 
-    Components.HoverPopupCard {
-        contentSpacing: 6
+    Components.HoverPopupDivider {}
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: 6
+    Components.HoverPopupMeterRow {
+        iconText: "󰸗"
+        label: "Calendar"
+        valueText: popup.monthYearText
+        showBar: false
+    }
 
-            Text {
-                Layout.fillWidth: true
-                text: "Calendar"
-                font.family: Theme.Theme.fontFamily
-                font.pixelSize: Theme.Theme.fontSize
-                font.weight: Font.Bold
-                color: Theme.Theme.text
-            }
+    GridLayout {
+        Layout.alignment: Qt.AlignHCenter
+        columns: 7
+        columnSpacing: 4
+        rowSpacing: 4
 
-            Text {
-                text: popup.monthYearText
+        Repeater {
+            model: popup.dayLabels
+
+            delegate: Text {
+                required property string modelData
+
+                Layout.preferredWidth: 30
+                horizontalAlignment: Text.AlignHCenter
+                text: modelData
                 font.family: Theme.Theme.fontFamily
                 font.pixelSize: Theme.Theme.fontSize - 1
                 font.weight: Font.Bold
-                color: Theme.Theme.subtext0
+                color: Theme.Theme.popupLabel
             }
         }
 
-        GridLayout {
-            columns: 7
-            columnSpacing: 4
-            rowSpacing: 4
+        Repeater {
+            model: popup.calendarCells
 
-            Repeater {
-                model: popup.dayLabels
+            delegate: Rectangle {
+                id: dayCell
 
-                delegate: Text {
-                    required property string modelData
+                required property var modelData
 
-                    Layout.preferredWidth: 30
-                    horizontalAlignment: Text.AlignHCenter
-                    text: modelData
+                Layout.preferredWidth: 30
+                Layout.preferredHeight: 24
+                radius: 0
+                color: dayCell.modelData.isToday ? Theme.Theme.popupFill : Theme.Theme.transparent
+
+                Text {
+                    anchors.centerIn: parent
+                    text: dayCell.modelData.inMonth ? dayCell.modelData.dayNumber.toString() : ""
                     font.family: Theme.Theme.fontFamily
                     font.pixelSize: Theme.Theme.fontSize - 1
                     font.weight: Font.Bold
-                    color: Theme.Theme.subtext1
-                }
-            }
-
-            Repeater {
-                model: popup.calendarCells
-
-                delegate: Rectangle {
-                    id: dayCell
-
-                    required property var modelData
-
-                    Layout.preferredWidth: 30
-                    Layout.preferredHeight: 24
-                    radius: 0
-                    color: dayCell.modelData.isToday ? Theme.Theme.mauve : Theme.Theme.transparent
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: dayCell.modelData.inMonth ? dayCell.modelData.dayNumber.toString() : ""
-                        font.family: Theme.Theme.fontFamily
-                        font.pixelSize: Theme.Theme.fontSize - 1
-                        font.weight: Font.Bold
-                        color: dayCell.modelData.isToday ? Theme.Theme.crust : Theme.Theme.subtext0
-                        horizontalAlignment: Text.AlignHCenter
-                    }
+                    color: dayCell.modelData.isToday ? Theme.Theme.crust : Theme.Theme.popupValue
+                    horizontalAlignment: Text.AlignHCenter
                 }
             }
         }

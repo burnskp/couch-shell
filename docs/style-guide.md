@@ -166,19 +166,27 @@ Implementation details and preferred helper rows live in [`components.md`](compo
 
 ### Preferred popup structure
 
-Most popups should be built as 2-3 stacked square cards.
+Hover popups are flat: rows sit directly in `HoverPopupFrame` with no inner card boxes. `TemperatureHover.qml` is the reference.
 
 Typical pattern:
 
-1. primary card
-1. secondary card
-1. optional supporting card or list card
+1. primary metric rows
+1. a `HoverPopupDivider`
+1. secondary rows, or a compact list such as top processes
 
-Each card should usually contain:
+Build rows with `Components.HoverPopupMeterRow`, which gives every popup the same columns:
 
-- a header row
-- a supporting line or bar if needed
-- optional repeated rows underneath
+- icon (`popupIcon`, `fontSize + 6`)
+- label (`popupLabel`)
+- metric bar (`popupFill` on `popupTrack`), or free space when the row has no bar
+- right-aligned value (`popupValue`)
+- an optional `detail` line at `fontSize - 1` for device names, sizes, reset times, and similar supporting text
+
+Keep all popup text in `popupLabel`/`popupValue`; do not dim secondary text to grey.
+
+Set `contentSpacing: Theme.Theme.listGap + 2` on the frame. Use dividers between groups rather than borders, boxes, or headers.
+
+Bars use `popupFill` by default. Switch the fill to `peach` or `red` only to signal a warning state, such as low battery or an exhausted quota. Keep the default `HoverPopupMetricBar` height across popups.
 
 ### Popup width
 
@@ -190,29 +198,6 @@ Current effective standard:
 - popup min width: about `275`
 
 Deviate only for content that genuinely needs it.
-
-### Card styling
-
-Default popup card recipe:
-
-- `Rectangle`
-- `color: Theme.Theme.surface0`
-- `border.width: 1`
-- `border.color: Qt.rgba(0, 0, 0, 0.06)`
-- `radius: 0`
-- internal margins around `6`
-
-### Bar styling
-
-Default bar recipe for popup metrics:
-
-- track color: `Theme.Theme.barBackground`
-- fill color: semantic accent (`teal`, `blue`, `peach`, `red`, etc.)
-- `radius: 0`
-- `opacity: 0.9`
-- thickness usually around `(Theme.Theme.indicatorThickness + 5) * 2`
-
-Use the same bar thickness across comparable cards unless there is a clear semantic reason not to.
 
 ### Information selection rules
 
@@ -228,7 +213,7 @@ Bad popup content:
 - repeats the widget headline in a larger surface
 - exposes raw service fields without grouping
 - gives equal weight to primary and secondary information
-- leaves empty-state cards fully expanded without purpose
+- leaves empty-state sections fully expanded without purpose
 
 ### Empty and unavailable states
 
@@ -238,7 +223,7 @@ Good options:
 
 - hide unavailable rows entirely
 - replace a whole idle section with one compact row like `Fans  Idle`
-- hide empty cards when they add nothing, such as an empty active-stream list
+- hide empty sections when they add nothing, such as an empty active-stream list
 
 Avoid rendering lots of `Unavailable` text unless the absence itself is important.
 
@@ -250,8 +235,8 @@ Examples: CPU, RAM, Battery, Temperature, Wi-Fi, Audio
 
 Rules:
 
-- use a primary metric card first
-- use secondary/supporting cards after that
+- lead with the primary metric rows
+- put secondary/supporting rows after a divider
 - make bars visualize meaningful normalized or stateful values
 - if values have different safe limits, normalize them per source instead of comparing raw values directly
 
@@ -267,19 +252,19 @@ Clock popups should complement the time widget.
 
 Use:
 
-- a `Today` card with weekday and full date
-- a `Calendar` card with the month grid
+- a `Today` row with the weekday and the full date as detail
+- a `Calendar` row with the month, followed by the month grid
 
 Do not overload the clock popup with unrelated system data like time zones or extra clock readouts unless specifically required.
 
-### List cards
+### Popup lists
 
-For lists inside cards such as active audio streams or top processes:
+For lists such as active audio streams or top processes:
 
-- title text should be bold primary text
-- subtitle text should use `subtext0`
+- put the list after a divider
+- use `HoverPopupMeterRow` with `showBar: false` and a `detail` subtitle, or `HoverPopupProcessRow` for processes
 - spacing should stay tight
-- if the list is empty, prefer hiding the whole card or showing one compact empty row
+- if the list is empty, hide it and its divider, or show one compact empty row
 
 ## Windows and Large Surfaces
 
@@ -355,7 +340,7 @@ When adding or updating any UI piece, ask:
 
 1. What is the single most important piece of information?
 1. What information is already shown by the widget, and should therefore not be repeated in the popup?
-1. Should this be one card, two cards, or a card plus a compact list?
+1. For a pane or menu, should this be one card, two cards, or a card plus a compact list? For a hover popup, which rows lead and where do the dividers go?
 1. Are bars showing meaningful normalized state, or just raw numbers that mislead?
 1. Can unavailable or redundant rows be hidden?
 1. Is the width aligned with the rest of the popups unless content clearly needs more?

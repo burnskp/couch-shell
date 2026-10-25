@@ -30,7 +30,7 @@ RowLayout {
         font.family: Theme.Theme.fontFamily
         font.pixelSize: Theme.Theme.fontSize - 1
         font.weight: Font.Bold
-        color: Theme.Theme.text
+        color: Theme.Theme.popupLabel
     }
 
     Item {
@@ -46,7 +46,7 @@ RowLayout {
         font.family: Theme.Theme.fontFamily
         font.pixelSize: Theme.Theme.fontSize - 1
         font.weight: Font.Bold
-        color: Theme.Theme.text
+        color: Theme.Theme.popupLabel
     }
 
     Text {
@@ -56,6 +56,6 @@ RowLayout {
         font.family: Theme.Theme.fontFamily
         font.pixelSize: Theme.Theme.fontSize - 1
         font.weight: Font.Bold
-        color: Theme.Theme.text
+        color: Theme.Theme.popupValue
     }
 }

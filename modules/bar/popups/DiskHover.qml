@@ -23,58 +23,49 @@ Components.HoverPopupFrame {
         ColumnLayout {
             id: cards
             width: parent.width
-            spacing: 8
+            spacing: Theme.Theme.listGap + 2
 
-            Components.HoverPopupCard {
-                Text {
-                    Layout.fillWidth: true
-                    text: root.btrfs ? "Btrfs volumes" : "Free / Total"
-                    font.family: Theme.Theme.fontFamily
-                    font.pixelSize: Theme.Theme.fontSize
-                    font.weight: Font.Bold
-                    color: Theme.Theme.text
-                }
-                Components.HoverPopupKeyValueRow {
-                    visible: root.btrfs
-                    label: ""
-                    value: "Free / Total"
-                }
-                Text {
-                    Layout.fillWidth: true
-                    visible: root.btrfs && text !== ""
-                    text: Services.SystemStatsState.btrfsStatus
-                    textFormat: Text.PlainText
-                    wrapMode: Text.Wrap
-                    font.family: Theme.Theme.fontFamily
-                    font.pixelSize: Theme.Theme.fontSize - 1
-                    color: Theme.Theme.subtext0
-                }
-                Repeater {
-                    model: root.btrfs ? Services.SystemStatsState.btrfsCards : Services.SystemStatsState.diskRows
-                    delegate: Components.HoverPopupKeyValueRow {
-                        required property var modelData
-                        labelColumnWidth: 100
-                        labelElide: root.btrfs ? Text.ElideMiddle : Text.ElideNone
-                        label: modelData.name
-                        value: root.btrfs ? modelData.capacity : modelData.value
-                    }
+            Components.HoverPopupMeterRow {
+                label: root.btrfs ? "Btrfs volumes" : "Disks"
+                valueText: "Free / Total"
+                showBar: false
+            }
+            Text {
+                Layout.fillWidth: true
+                visible: root.btrfs && text !== ""
+                text: Services.SystemStatsState.btrfsStatus
+                textFormat: Text.PlainText
+                wrapMode: Text.Wrap
+                font.family: Theme.Theme.fontFamily
+                font.pixelSize: Theme.Theme.fontSize - 1
+                font.weight: Font.Bold
+                color: Theme.Theme.popupLabel
+            }
+            Repeater {
+                model: root.btrfs ? Services.SystemStatsState.btrfsCards : Services.SystemStatsState.diskRows
+                delegate: Components.HoverPopupMeterRow {
+                    required property var modelData
+                    iconText: "󰋊"
+                    labelElide: Text.ElideMiddle
+                    label: modelData.name
+                    valueText: root.btrfs ? modelData.capacity : modelData.value
+                    showBar: false
                 }
             }
 
             Repeater {
                 model: root.btrfs ? Services.SystemStatsState.btrfsCards : []
-                delegate: Components.HoverPopupCard {
+                delegate: ColumnLayout {
                     id: volumeCard
                     required property var modelData
-                    Text {
-                        Layout.fillWidth: true
-                        text: "Subvolumes · " + volumeCard.modelData.name
-                        textFormat: Text.PlainText
-                        elide: Text.ElideMiddle
-                        font.family: Theme.Theme.fontFamily
-                        font.pixelSize: Theme.Theme.fontSize
-                        font.weight: Font.Bold
-                        color: Theme.Theme.text
+                    Layout.fillWidth: true
+                    spacing: Theme.Theme.listGap
+                    Components.HoverPopupDivider {}
+                    Components.HoverPopupMeterRow {
+                        iconText: "󰉋"
+                        label: "Subvolumes · " + volumeCard.modelData.name
+                        labelElide: Text.ElideMiddle
+                        showBar: false
                     }
                     Text {
                         Layout.fillWidth: true
@@ -83,7 +74,8 @@ Components.HoverPopupFrame {
                         wrapMode: Text.Wrap
                         font.family: Theme.Theme.fontFamily
                         font.pixelSize: Theme.Theme.fontSize - 1
-                        color: Theme.Theme.subtext0
+                        font.weight: Font.Bold
+                        color: Theme.Theme.popupLabel
                     }
                     GridLayout {
                         Layout.fillWidth: true
@@ -98,7 +90,7 @@ Components.HoverPopupFrame {
                             font.pixelSize: Theme.Theme.fontSize - 1
                             font.weight: Font.Bold
                             horizontalAlignment: Text.AlignRight
-                            color: Theme.Theme.text
+                            color: Theme.Theme.popupLabel
                         }
                         Text {
                             Layout.alignment: Qt.AlignRight
@@ -107,7 +99,7 @@ Components.HoverPopupFrame {
                             font.pixelSize: Theme.Theme.fontSize - 1
                             font.weight: Font.Bold
                             horizontalAlignment: Text.AlignRight
-                            color: Theme.Theme.text
+                            color: Theme.Theme.popupLabel
                         }
                         Repeater {
                             model: volumeCard.modelData.rows.length * 3
@@ -125,18 +117,16 @@ Components.HoverPopupFrame {
                                 font.family: Theme.Theme.fontFamily
                                 font.pixelSize: index % 3 === 0 ? Theme.Theme.fontSize - 1 : Theme.Theme.fontSize
                                 font.weight: Font.Bold
-                                color: Theme.Theme.text
+                                color: Theme.Theme.popupValue
                             }
                         }
                     }
                     Components.HoverPopupDivider { visible: volumeCard.modelData.snapshots.length > 0 }
-                    Text {
+                    Components.HoverPopupMeterRow {
                         visible: volumeCard.modelData.snapshots.length > 0
-                        text: "Snapshots"
-                        font.family: Theme.Theme.fontFamily
-                        font.pixelSize: Theme.Theme.fontSize
-                        font.weight: Font.Bold
-                        color: Theme.Theme.text
+                        iconText: "󰄄"
+                        label: "Snapshots"
+                        showBar: false
                     }
                     Repeater {
                         model: volumeCard.modelData.snapshots
