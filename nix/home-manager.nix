@@ -144,6 +144,15 @@ in
           description = "AI subscription shown in the bar usage chip when the shell starts. Clicking the chip switches it until the next restart.";
         };
 
+        hoverProviders = lib.mkOption {
+          type = lib.types.enum [
+            "all"
+            "current"
+          ];
+          default = defaults.bar.aiUsage.hoverProviders;
+          description = "Whether the AI usage hover lists every AI subscription or only the one shown in the chip.";
+        };
+
         refreshInterval = lib.mkOption {
           type = lib.types.ints.positive;
           default = defaults.bar.aiUsage.refreshInterval;

@@ -31,6 +31,7 @@
     height = 20;
     aiUsage = {
       defaultProvider = "chatgpt";
+      hoverProviders = "all";
       refreshInterval = 300;
     };
     disk = {
@@ -107,6 +108,11 @@ let
     "claude"
   ];
   aiUsageDefaultProvider = lib.attrByPath [ "aiUsage" "defaultProvider" ] "chatgpt" bar;
+  aiUsageHoverProviderModes = [
+    "all"
+    "current"
+  ];
+  aiUsageHoverProviders = lib.attrByPath [ "aiUsage" "hoverProviders" ] "all" bar;
   aiUsageRefreshInterval = lib.attrByPath [ "aiUsage" "refreshInterval" ] 300 bar;
   btrfsInterval = lib.attrByPath [ "disk" "btrfs" "pollInterval" ] 300 bar;
   warningThresholdGiB = lib.attrByPath [ "disk" "warningThresholdGiB" ] 50 bar;
@@ -155,6 +161,8 @@ assert lib.assertMsg (lib.elem normalizedTheme.flavor catppuccinFlavors)
   "couch-shell: theme.flavor must be one of ${lib.concatStringsSep ", " catppuccinFlavors}";
 assert lib.assertMsg (lib.elem aiUsageDefaultProvider aiUsageProviders)
   "couch-shell: bar.aiUsage.defaultProvider must be one of ${lib.concatStringsSep ", " aiUsageProviders}";
+assert lib.assertMsg (lib.elem aiUsageHoverProviders aiUsageHoverProviderModes)
+  "couch-shell: bar.aiUsage.hoverProviders must be one of ${lib.concatStringsSep ", " aiUsageHoverProviderModes}";
 assert lib.assertMsg (
   builtins.isInt aiUsageRefreshInterval && aiUsageRefreshInterval > 0
 ) "couch-shell: bar.aiUsage.refreshInterval must be a positive integer";
@@ -239,6 +247,7 @@ stdenvNoCC.mkDerivation {
       --replace-fail '__BAR_DISK_JSON__' ${lib.escapeShellArg (escapeQmlString diskJson)} \
       --replace-fail '__BAR_HEIGHT__' '${toString barHeight}' \
       --replace-fail '__AI_USAGE_DEFAULT_PROVIDER__' '${aiUsageDefaultProvider}' \
+      --replace-fail '__AI_USAGE_HOVER_PROVIDERS__' '${aiUsageHoverProviders}' \
       --replace-fail '__AI_USAGE_REFRESH_INTERVAL__' '${toString aiUsageRefreshInterval}' \
       --replace-fail '__BAR_TEMPERATURE_ENABLE__' '${
         if bar.temperature.enable then "true" else "false"

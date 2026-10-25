@@ -89,6 +89,7 @@ The Home Manager runtime configuration surface is intentionally small:
 - `bar.disk.btrfs.pollInterval` (default `300` seconds)
 - `bar.height`
 - `bar.aiUsage.defaultProvider` (`chatgpt` or `claude`, default `chatgpt`)
+- `bar.aiUsage.hoverProviders` (`all` or `current`, default `all`)
 - `bar.aiUsage.refreshInterval` (default `300` seconds)
 - `bar.temperature.enable`
 - `bar.temperature.textPath`
@@ -278,15 +279,18 @@ If you do not use `$mod`, replace it with the modifier string you use in Hyprlan
 The robot chip immediately before Wi-Fi shows the lowest remaining subscription quota
 for one AI account: ChatGPT (the Codex quota for the account signed in through Couch AI)
 or Claude (the Pro/Max quota for the account signed in to Claude Code). Click it to
-switch which account is shown; the hover title names the current one. Usage refreshes
+switch which account is shown. Usage refreshes
 never change the selection. On startup the chip shows `bar.aiUsage.defaultProvider`:
 
 ```nix
 programs.couch-shell.bar.aiUsage.defaultProvider = "claude"; # or "chatgpt" (default)
+programs.couch-shell.bar.aiUsage.hoverProviders = "current"; # or "all" (default)
 programs.couch-shell.bar.aiUsage.refreshInterval = 120; # seconds, default 300
 ```
 
-The hover shows the plan, each quota window, remaining
+By default the hover lists both accounts, starting with the one in the chip;
+`bar.aiUsage.hoverProviders = "current"` limits it to the chip's account. For each
+account the hover shows the plan, each quota window, remaining
 percentage, and time until reset in days, hours, and minutes (for example, `2d 3h 15m`).
 
 Claude usage reuses Claude Code's login from `~/.claude/.credentials.json` (or

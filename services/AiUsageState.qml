@@ -14,22 +14,37 @@ Item {
     // Only select() changes this; usage refreshes replace provider records but keep the selection.
     property string selectedProviderId: Services.ShellConfig.aiUsageDefaultProvider === "claude" ? "claude" : "openai-codex"
     readonly property var provider: providerById(selectedProviderId)
-    readonly property string title: provider.id === "claude" ? "Claude" : "ChatGPT · Codex"
+    readonly property string title: providerTitle(provider)
+    // The hover lists the selected provider first, then the rest unless configured to show only it.
+    readonly property var hoverProviders: Services.ShellConfig.aiUsageHoverProviders === "current" ? [provider]
+        : [provider].concat(providers.filter(entry => entry.id !== provider.id))
     property real now: Date.now()
     property string accountKey: ""
     property var resetRefreshRequested: ({})
     readonly property bool authenticated: Services.AiChatService.configured && !Services.AiChatService.authenticatedWorkBlocked
     readonly property bool pollingEnabled: Services.BarManager.visible && authenticated && !Services.AiChatService.loginBusy
     readonly property var summary: Logic.summary(provider, now)
-    readonly property bool stale: provider.windows.length > 0 && (provider.status !== "ready" || Logic.expired(provider, now))
-    readonly property string message: provider.id === "openai-codex" && !authenticated ? "Sign in through Couch AI to track your subscription."
-        : provider.error || (stale ? "Refreshing usage… Previous reading is stale."
-        : provider.status === "loading" ? "Loading subscription usage…" : "")
+    readonly property bool stale: providerStale(provider)
+    readonly property string message: providerMessage(provider)
     property var activeClaudeProcess: null
     readonly property bool claudeBusy: activeClaudeProcess !== null
 
     function emptyProvider(id, name) {
         return { id: id, name: name, plan: "", status: "idle", updatedAt: 0, error: "", windows: [] };
+    }
+
+    function providerTitle(entry) {
+        return entry.id === "claude" ? "Claude" : "ChatGPT · Codex";
+    }
+
+    function providerStale(entry) {
+        return entry.windows.length > 0 && (entry.status !== "ready" || Logic.expired(entry, root.now));
+    }
+
+    function providerMessage(entry) {
+        return entry.id === "openai-codex" && !root.authenticated ? "Sign in through Couch AI to track your subscription."
+            : entry.error || (root.providerStale(entry) ? "Refreshing usage… Previous reading is stale."
+            : entry.status === "loading" ? "Loading subscription usage…" : "");
     }
 
     function providerById(id) {

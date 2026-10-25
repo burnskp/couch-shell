@@ -174,6 +174,11 @@ publish this model and retain their own authentication behind the service bounda
 and hover provider. It starts from `ShellConfig.aiUsageDefaultProvider` (the
 `bar.aiUsage.defaultProvider` Nix option) and changes only through `select()` or
 `selectNext()`; usage refreshes replace provider records without touching it.
+The hover renders `hoverProviders`: the selected provider first, then the others, or
+only the selected one when `ShellConfig.aiUsageHoverProviders` (the
+`bar.aiUsage.hoverProviders` Nix option, default `all`) is `current`. Per-provider
+`providerTitle()`, `providerMessage()`, and `providerStale()` back each hover section;
+`title`, `message`, and `stale` apply them to the selected provider.
 
 The chip selects the minimum remaining percentage. Positive fractions round upward.
 At zero it counts down to the latest exhausted window's reset, provided every blocking

@@ -45,6 +45,7 @@
           height = 20;
           aiUsage = {
             defaultProvider = "chatgpt";
+            hoverProviders = "all";
             refreshInterval = 300;
           };
           disk = {

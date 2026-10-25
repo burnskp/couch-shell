@@ -53,6 +53,7 @@ QtObject {
     readonly property string notificationToastFontSizeToken: "__NOTIFICATION_TOAST_FONT_SIZE__"
     readonly property int notificationToastFontSize: Number(notificationToastFontSizeToken) > 0 ? Number(notificationToastFontSizeToken) : fontSize
     readonly property string aiUsageDefaultProvider: stringToken("__AI_USAGE_DEFAULT_PROVIDER__", "chatgpt")
+    readonly property string aiUsageHoverProviders: stringToken("__AI_USAGE_HOVER_PROVIDERS__", "all")
     readonly property string aiUsageRefreshIntervalToken: "__AI_USAGE_REFRESH_INTERVAL__"
     readonly property int aiUsageRefreshInterval: Number(aiUsageRefreshIntervalToken) > 0 ? Number(aiUsageRefreshIntervalToken) : 300
     readonly property string barHeightToken: "__BAR_HEIGHT__"
