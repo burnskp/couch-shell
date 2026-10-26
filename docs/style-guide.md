@@ -176,11 +176,12 @@ Typical pattern:
 
 Build rows with `Components.HoverPopupMeterRow`, which gives every popup the same columns:
 
-- icon (`popupIcon`, `fontSize + 6`)
 - label (`popupLabel`)
 - metric bar (`popupFill` on `popupTrack`), or free space when the row has no bar
 - right-aligned value (`popupValue`)
 - an optional `detail` line at `fontSize - 1` for device names, sizes, reset times, and similar supporting text
+
+Hover rows carry no icons; the label names the row.
 
 Keep all popup text in `popupLabel`/`popupValue`; do not dim secondary text to grey.
 

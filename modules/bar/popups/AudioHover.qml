@@ -21,7 +21,6 @@ Components.HoverPopupFrame {
     }
 
     Components.HoverPopupMeterRow {
-        iconText: Services.AudioState.muted ? "󰖁" : "󰕾"
         label: "Output"
         valueColumnWidth: Math.ceil(valueMetrics.advanceWidth("Muted"))
         valueText: Services.AudioState.muted ? "Muted" : Services.AudioState.volumePercent + "%"
@@ -30,7 +29,6 @@ Components.HoverPopupFrame {
     }
 
     Components.HoverPopupMeterRow {
-        iconText: Services.AudioState.inputMuted ? "󰍭" : "󰍬"
         label: "Input"
         valueColumnWidth: Math.ceil(valueMetrics.advanceWidth("Muted"))
         valueText: Services.AudioState.inputMuted ? "Muted" : Services.AudioState.inputVolumePercent + "%"
@@ -48,7 +46,6 @@ Components.HoverPopupFrame {
         delegate: Components.HoverPopupMeterRow {
             required property var modelData
 
-            iconText: "󰐊"
             label: modelData.title
             showBar: false
             detail: modelData.subtitle

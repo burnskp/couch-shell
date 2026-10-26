@@ -35,7 +35,6 @@ Components.HoverPopupFrame {
             Components.HoverPopupDivider { visible: providerSection.index > 0 }
 
             Components.HoverPopupMeterRow {
-                iconColumnWidth: 0
                 label: Services.AiUsageState.providerTitle(providerSection.modelData)
                 valueText: providerSection.modelData.plan
                 showBar: false
@@ -50,7 +49,6 @@ Components.HoverPopupFrame {
                     // The section can be torn down before its window rows on provider changes.
                     readonly property bool stale: providerSection !== null && providerSection.stale
 
-                    iconColumnWidth: 0
                     labelColumnWidth: Math.ceil(windowLabelMetrics.advanceWidth("Primary limit") + windowLabelMetrics.advanceWidth(" "))
                     label: Logic.windowLabel(modelData)
                     valueText: Logic.percentage(modelData.remainingPercent)

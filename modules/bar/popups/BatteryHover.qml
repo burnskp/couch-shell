@@ -13,13 +13,11 @@ Components.HoverPopupFrame {
 
     readonly property var statusRows: [
         {
-            "icon": "󱐋",
             "label": "Rate",
             "value": Services.BatteryState.wattsText,
             "visible": Services.BatteryState.wattsText !== "Unavailable"
         },
         {
-            "icon": "󰣐",
             "label": "Health",
             "value": Services.BatteryState.healthText,
             "visible": Services.BatteryState.healthText !== "Unavailable"
@@ -28,7 +26,6 @@ Components.HoverPopupFrame {
     readonly property var visibleStatusRows: root.statusRows.filter((row) => row.visible)
 
     Components.HoverPopupMeterRow {
-        iconText: "󰁹"
         label: "Battery"
         valueText: Services.BatteryState.percentage + "%"
         barValue: Services.BatteryState.percentage / 100
@@ -38,7 +35,6 @@ Components.HoverPopupFrame {
     Components.HoverPopupDivider {}
 
     Components.HoverPopupMeterRow {
-        iconText: "󰚥"
         label: "Status"
         valueText: Services.BatteryState.statusSummary
         showBar: false
@@ -50,7 +46,6 @@ Components.HoverPopupFrame {
         delegate: Components.HoverPopupMeterRow {
             required property var modelData
 
-            iconText: modelData.icon
             label: modelData.label
             valueText: modelData.value
             showBar: false
@@ -59,7 +54,6 @@ Components.HoverPopupFrame {
 
     Components.HoverPopupMeterRow {
         visible: Services.BatteryState.degradationActive
-        iconText: "󰓅"
         label: "Performance"
         showBar: false
         detail: Services.BatteryState.degradationText

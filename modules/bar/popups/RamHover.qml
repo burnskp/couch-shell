@@ -14,14 +14,12 @@ Components.HoverPopupFrame {
 
     readonly property var memorySections: [
         {
-            "icon": "󰍛",
             "title": "Memory",
             "percent": Services.SystemStatsState.memoryPercent,
             "summary": Services.SystemStatsState.formatGib(Services.SystemStatsState.memoryUsedBytes) + " used / " + Services.SystemStatsState.memoryAvailableLabel + " free",
             "visible": true
         },
         {
-            "icon": "󰾴",
             "title": "Swap",
             "percent": Services.SystemStatsState.swapPercent,
             "summary": Services.SystemStatsState.formatGib(Services.SystemStatsState.swapUsedBytes) + " used / " + Services.SystemStatsState.formatGib(Math.max(Services.SystemStatsState.swapTotalBytes - Services.SystemStatsState.swapUsedBytes, 0)) + " free",
@@ -36,7 +34,6 @@ Components.HoverPopupFrame {
         delegate: Components.HoverPopupMeterRow {
             required property var modelData
 
-            iconText: modelData.icon
             label: modelData.title
             valueText: modelData.percent + "%"
             barValue: modelData.percent / 100

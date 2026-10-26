@@ -2,13 +2,11 @@ import QtQuick
 import QtQuick.Layouts
 import "../theme" as Theme
 
-// Flat hover popup row: [icon | label | metric bar | value] with an optional detail line.
+// Flat hover popup row: [label | metric bar | value] with an optional detail line.
 // Without a bar the label takes the free width so longer names and values still fit.
 ColumnLayout {
     id: root
 
-    property string iconText: ""
-    property color iconColor: Theme.Theme.popupIcon
     property string label: ""
     property int labelElide: Text.ElideRight
     property string valueText: ""
@@ -20,11 +18,9 @@ ColumnLayout {
     property bool detailWrap: false
     property int rowHeight: 28
     property int columnSpacing: Theme.Theme.listGap
-    property int iconColumnWidth: 22
     property int labelColumnWidth: 52
     // Fits the widest percentage so the value sits close to the bar.
     property int valueColumnWidth: Math.ceil(valueMetrics.advanceWidth("100%"))
-    readonly property int detailIndent: root.iconColumnWidth > 0 ? root.iconColumnWidth + root.columnSpacing : 0
 
     Layout.fillWidth: true
     spacing: 0
@@ -41,18 +37,6 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: root.rowHeight
         spacing: root.columnSpacing
-
-        Text {
-            visible: root.iconColumnWidth > 0
-            Layout.preferredWidth: root.iconColumnWidth
-            Layout.alignment: Qt.AlignVCenter
-            horizontalAlignment: Text.AlignHCenter
-            text: root.iconText
-            font.family: Theme.Theme.fontFamily
-            font.pixelSize: Theme.Theme.fontSize + 6
-            font.weight: Font.Bold
-            color: root.iconColor
-        }
 
         Text {
             Layout.fillWidth: !root.showBar
@@ -92,7 +76,6 @@ ColumnLayout {
 
     Text {
         Layout.fillWidth: true
-        Layout.leftMargin: root.detailIndent
         visible: root.detail.length > 0
         text: root.detail
         textFormat: Text.PlainText

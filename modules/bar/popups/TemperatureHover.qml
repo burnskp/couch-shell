@@ -25,24 +25,6 @@ Components.HoverPopupFrame {
         return Math.max(highest, 1);
     }
 
-    function sensorIcon(row) {
-        const label = row && row.label ? row.label.toString().toLowerCase() : "";
-
-        if (label.indexOf("wifi") >= 0 || label.indexOf("wireless") >= 0)
-            return "󰖩";
-
-        if (label.indexOf("ram") >= 0 || label.indexOf("memory") >= 0)
-            return "󰍛";
-
-        if (label.indexOf("nvme") >= 0 || label.indexOf("ssd") >= 0 || label.indexOf("disk") >= 0)
-            return "󰋊";
-
-        if (label.indexOf("cpu") >= 0 || label.indexOf("package") >= 0 || label.indexOf("core") >= 0)
-            return "󰘚";
-
-        return "";
-    }
-
     function normalizedTemperature(row) {
         if (!row || !Number.isFinite(row.temperatureC) || !Number.isFinite(row.criticalC) || row.criticalC <= 0)
             return 0;
@@ -56,7 +38,6 @@ Components.HoverPopupFrame {
         delegate: Components.HoverPopupMeterRow {
             required property var modelData
 
-            iconText: root.sensorIcon(modelData)
             valueColumnWidth: 48
             label: modelData.label
             valueText: modelData.temperatureLabel
@@ -80,7 +61,6 @@ Components.HoverPopupFrame {
         delegate: Components.HoverPopupMeterRow {
             required property var modelData
 
-            iconText: "󰈐"
             valueColumnWidth: 48
             label: modelData.label
             valueText: modelData.rpmLabel

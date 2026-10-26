@@ -45,7 +45,6 @@ Components.HoverPopupFrame {
                 model: root.btrfs ? Services.SystemStatsState.btrfsCards : Services.SystemStatsState.diskRows
                 delegate: Components.HoverPopupMeterRow {
                     required property var modelData
-                    iconText: "󰋊"
                     labelElide: Text.ElideMiddle
                     label: modelData.name
                     valueText: root.btrfs ? modelData.capacity : modelData.value
@@ -62,7 +61,6 @@ Components.HoverPopupFrame {
                     spacing: Theme.Theme.listGap
                     Components.HoverPopupDivider {}
                     Components.HoverPopupMeterRow {
-                        iconText: "󰉋"
                         label: "Subvolumes · " + volumeCard.modelData.name
                         labelElide: Text.ElideMiddle
                         showBar: false
@@ -124,7 +122,6 @@ Components.HoverPopupFrame {
                     Components.HoverPopupDivider { visible: volumeCard.modelData.snapshots.length > 0 }
                     Components.HoverPopupMeterRow {
                         visible: volumeCard.modelData.snapshots.length > 0
-                        iconText: "󰄄"
                         label: "Snapshots"
                         showBar: false
                     }

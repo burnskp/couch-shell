@@ -164,7 +164,6 @@ Components.HoverPopupFrame {
     contentSpacing: Theme.Theme.listGap + 2
 
     Components.HoverPopupMeterRow {
-        iconText: "󰍛"
         label: "Memory"
         valueText: "42%"
         barValue: 0.42
@@ -222,7 +221,7 @@ Use a custom override only when the popup genuinely needs behavior outside the c
 
 ### `Components.HoverPopupMeterRow`
 
-The standard row for bar hover popups: `[icon | label | metric bar | value]` with an optional detail line underneath. All the popups in `modules/bar/popups/` are built from it, and `TemperatureHover.qml` is the reference layout.
+The standard row for bar hover popups: `[label | metric bar | value]` with an optional detail line underneath. All the popups in `modules/bar/popups/` are built from it, and `TemperatureHover.qml` is the reference layout.
 
 Use it for:
 
@@ -232,13 +231,11 @@ Use it for:
 
 Important properties:
 
-- `iconText`, `iconColor`
 - `label`, `labelElide`
 - `valueText`
 - `showBar`, `barValue` from `0` to `1`, `fillColor`
 - `detail`, `detailWrap`
-- `labelColumnWidth`, `valueColumnWidth`, `iconColumnWidth` (defaults `52`, the width of `100%`, `22`; Temperature uses `48` for `°C` values); widen the label column with `FontMetrics` when labels are longer, adding one space's width so the gap before the bar matches the other hovers; set `iconColumnWidth: 0` for rows without an icon
-- `detailIndent` (read-only) for aligning extra content such as the CPU core grid under the label column
+- `labelColumnWidth`, `valueColumnWidth` (defaults `52` and the width of `100%`; Temperature uses `48` for `°C` values); widen the label column with `FontMetrics` when labels are longer, adding one space's width so the gap before the bar matches the other hovers
 
 ### `Components.HoverPopupKeyValueRow`
 

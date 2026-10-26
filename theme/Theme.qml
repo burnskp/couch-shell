@@ -96,7 +96,6 @@ QtObject {
     readonly property color popupLabel: text
     readonly property color popupValue: text
     readonly property color popupIdle: overlay1
-    readonly property color popupIcon: mauve
     readonly property color popupTrack: surface0
     readonly property color popupFill: mauve
 

@@ -69,7 +69,6 @@ Components.HoverPopupFrame {
             spacing: Theme.Theme.listGap
 
             Components.HoverPopupMeterRow {
-                iconText: "󰘚"
                 label: clusterSection.modelData.title
                 // One character of padding matches the label-to-bar gap on the other hovers.
                 labelColumnWidth: Math.ceil(clusterLabelMetrics.advanceWidth("Performance") + clusterLabelMetrics.advanceWidth(" "))

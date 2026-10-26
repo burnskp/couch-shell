@@ -37,7 +37,6 @@ Components.HoverPopupFrame {
     minPopupWidth: 275
 
     Components.HoverPopupMeterRow {
-        iconText: "󰃭"
         label: "Today"
         valueText: popup.weekdayText
         showBar: false
@@ -47,7 +46,6 @@ Components.HoverPopupFrame {
     Components.HoverPopupDivider {}
 
     Components.HoverPopupMeterRow {
-        iconText: "󰸗"
         label: "Calendar"
         valueText: popup.monthYearText
         showBar: false

@@ -51,7 +51,6 @@ Components.HoverPopupFrame {
     }
 
     Components.HoverPopupMeterRow {
-        iconText: Services.NetworkState.iconGlyph
         label: "Signal"
         valueText: Services.NetworkState.strengthLabel
         barValue: Services.NetworkState.connected ? Services.NetworkState.signalPercent / 100 : 0
@@ -117,7 +116,6 @@ Components.HoverPopupFrame {
         Components.HoverPopupMeterRow {
             // Equal preferred widths split the line evenly between Up and Down.
             Layout.preferredWidth: 1
-            iconText: "󰕒"
             label: "Up"
             valueText: root.txRateLabel
             showBar: false
@@ -125,8 +123,6 @@ Components.HoverPopupFrame {
 
         Components.HoverPopupMeterRow {
             Layout.preferredWidth: 1
-            iconText: "󰇚"
-            iconColor: Theme.Theme.lavender
             label: "Down"
             valueText: root.rxRateLabel
             showBar: false
@@ -136,14 +132,12 @@ Components.HoverPopupFrame {
     Components.HoverPopupDivider {}
 
     Components.HoverPopupMeterRow {
-        iconText: "󰁝"
         label: "Tx Total"
         valueText: Services.NetworkState.connected ? Services.NetworkState.formatBytes(Services.NetworkState.sessionTxBytes) : "--"
         showBar: false
     }
 
     Components.HoverPopupMeterRow {
-        iconText: "󰁅"
         label: "Rx Total"
         valueText: Services.NetworkState.connected ? Services.NetworkState.formatBytes(Services.NetworkState.sessionRxBytes) : "--"
         showBar: false
