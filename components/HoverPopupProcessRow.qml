@@ -41,6 +41,7 @@ RowLayout {
     Text {
         Layout.fillWidth: true
         text: root.command
+        textFormat: Text.PlainText
         clip: true
         wrapMode: Text.NoWrap
         font.family: Theme.Theme.fontFamily

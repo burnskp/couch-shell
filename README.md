@@ -81,6 +81,7 @@ The Home Manager runtime configuration surface is intentionally small:
 - `fonts.notificationToastSize`
 - `fonts.packages`
 - `theme.flavor`
+- `notifications.historyLimit` (default `200` entries)
 - `bar.disk.textPath`
 - `bar.disk.warningThresholdGiB` (default `50`)
 - `bar.disk.criticalThresholdGiB` (default `10`)

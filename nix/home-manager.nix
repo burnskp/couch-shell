@@ -26,6 +26,9 @@ let
     theme = {
       inherit (cfg.theme) flavor;
     };
+    notifications = {
+      inherit (cfg.notifications) historyLimit;
+    };
     bar = {
       inherit (cfg.bar) height disk aiUsage;
       temperature = {
@@ -124,6 +127,14 @@ in
         ];
         default = defaults.theme.flavor;
         description = "Catppuccin flavor used for the shell palette.";
+      };
+    };
+
+    notifications = {
+      historyLimit = lib.mkOption {
+        type = lib.types.ints.positive;
+        default = defaults.notifications.historyLimit;
+        description = "Maximum number of notification history entries kept; the oldest entries are dropped first.";
       };
     };
 

@@ -41,6 +41,9 @@
         theme = {
           flavor = "latte";
         };
+        notifications = {
+          historyLimit = 200;
+        };
         bar = {
           height = 20;
           aiUsage = {
@@ -95,6 +98,7 @@
           bar ? defaults.bar,
           fonts ? defaults.fonts,
           theme ? defaults.theme,
+          notifications ? defaults.notifications,
         }:
         pkgs.callPackage ./nix/package.nix {
           inherit (defaults) wallpaper;
@@ -121,6 +125,7 @@
               temperature = mergedTemperature;
             };
           theme = lib.recursiveUpdate defaults.theme theme;
+          notifications = lib.recursiveUpdate defaults.notifications notifications;
         };
       checkSource = lib.fileset.toSource {
         root = ./.;
@@ -205,9 +210,15 @@
             bar ? defaults.bar,
             fonts ? defaults.fonts,
             theme ? defaults.theme,
+            notifications ? defaults.notifications,
           }:
           mkCouchShellPackage pkgs {
-            inherit bar fonts theme;
+            inherit
+              bar
+              fonts
+              theme
+              notifications
+              ;
           };
       };
 

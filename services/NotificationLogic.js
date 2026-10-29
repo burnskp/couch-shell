@@ -55,23 +55,31 @@ function normalizeNotificationPayload(payload, options) {
 	};
 }
 
+function countContribution(notification, urgencyLow) {
+	const rollupCount = Math.max(1, Number(notification.rollupCount ?? 1));
+	const unreadRollupCount = Math.max(
+		0,
+		Number(
+			notification.unreadRollupCount ?? (notification.read ? 0 : rollupCount),
+		),
+	);
+
+	return {
+		unreadCount: unreadRollupCount,
+		statusNotificationCount:
+			notification.urgency !== urgencyLow ? rollupCount : 0,
+	};
+}
+
 function recomputeCounts(notifications, urgencyLow) {
 	let unreadCount = 0;
 	let statusNotificationCount = 0;
 
 	for (const notification of notifications) {
-		const rollupCount = Math.max(1, Number(notification.rollupCount ?? 1));
-		const unreadRollupCount = Math.max(
-			0,
-			Number(
-				notification.unreadRollupCount ?? (notification.read ? 0 : rollupCount),
-			),
-		);
+		const contribution = countContribution(notification, urgencyLow);
 
-		unreadCount += unreadRollupCount;
-
-		if (notification.urgency !== urgencyLow)
-			statusNotificationCount += rollupCount;
+		unreadCount += contribution.unreadCount;
+		statusNotificationCount += contribution.statusNotificationCount;
 	}
 
 	return {

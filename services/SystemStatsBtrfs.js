@@ -45,18 +45,24 @@ function volumeCards(report, formatBytes) {
 	function baseName(volume) {
 		return volume.label || volume.device.split("/").pop() || volume.uuid;
 	}
+	// Plain objects, not Map: QML's JS engine looks up Map keys linearly.
+	const baseNameCounts = Object.create(null);
+	for (const volume of filesystems) {
+		const base = baseName(volume);
+		baseNameCounts[base] = (baseNameCounts[base] || 0) + 1;
+	}
 	return filesystems.map((volume) => {
 		const base = baseName(volume);
-		const name =
-			filesystems.filter((v) => baseName(v) === base).length > 1
-				? base + " · " + volume.uuid
-				: base;
+		const name = baseNameCounts[base] > 1 ? base + " · " + volume.uuid : base;
 		const subvolumes = volume.subvolumes || [];
-		const snapshots = {};
+		const subvolumesByUuid = Object.create(null);
+		for (const subvolume of subvolumes)
+			subvolumesByUuid[subvolume.uuid] = subvolume;
+		const snapshots = Object.create(null);
 		let unassociated = 0;
 		for (const subvolume of subvolumes) {
 			if (!subvolume.parentUuid) continue;
-			const source = subvolumes.find((s) => s.uuid === subvolume.parentUuid);
+			const source = subvolumesByUuid[subvolume.parentUuid];
 			if (source) snapshots[source.uuid] = (snapshots[source.uuid] || 0) + 1;
 			else unassociated++;
 		}
@@ -75,7 +81,7 @@ function volumeCards(report, formatBytes) {
 						: "—",
 			}));
 		const snapshotRows = Object.keys(snapshots).map((uuid) => ({
-			name: subvolumes.find((s) => s.uuid === uuid).path,
+			name: subvolumesByUuid[uuid].path,
 			value: String(snapshots[uuid]),
 		}));
 		if (unassociated)

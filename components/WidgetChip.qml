@@ -83,6 +83,7 @@ ModuleChip {
         horizontalAlignment: root.valueHorizontalAlignment
         elide: root.valueElideMode
         text: root.valueText
+        textFormat: Text.PlainText
         font.family: Theme.Theme.fontFamily
         font.pixelSize: Theme.Theme.fontSize
         font.weight: root.valueTextWeight

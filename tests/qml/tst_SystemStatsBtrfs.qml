@@ -59,4 +59,17 @@ TestCase {
         compare(card.snapshots, [{name: "source", value: "3"}, {name: "Unassociated", value: "1"}]);
     }
 
+    function test_snapshot_grouping_scales_and_resolves_late_parents() {
+        const subvolumes = [];
+        for (let index = 0; index < 20000; index += 1)
+            subvolumes.push({path: "snap-" + index, uuid: "s" + index, parentUuid: index % 2 === 0 ? "source" : "missing-" + index});
+        subvolumes.push({path: "source", uuid: "source", parentUuid: null});
+        const started = Date.now();
+
+        const card = Btrfs.volumeCards({filesystems: [{uuid: "fs", device: "/dev/test", status: "ok", accounting: "valid", subvolumes: subvolumes}]}, Formatting.formatBytes)[0];
+
+        verify(Date.now() - started < 2000, "grouping took " + (Date.now() - started) + "ms");
+        compare(card.snapshots, [{name: "source", value: "10000"}, {name: "Unassociated", value: "10000"}]);
+    }
+
 }

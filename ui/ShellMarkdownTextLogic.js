@@ -66,8 +66,9 @@ function isEscaped(source, index) {
 	return backslashCount % 2 === 1;
 }
 
-function hasClosingBacktickRun(source, start, runLength) {
-	for (let i = start; i < source.length; ) {
+function lastBacktickRunStarts(source) {
+	const starts = {};
+	for (let i = 0; i < source.length; ) {
 		if (source[i] !== "`") {
 			i++;
 			continue;
@@ -76,12 +77,11 @@ function hasClosingBacktickRun(source, start, runLength) {
 		let end = i + 1;
 		while (end < source.length && source[end] === "`") end++;
 
-		if (end - i === runLength) return true;
-
+		starts[end - i] = i;
 		i = end;
 	}
 
-	return false;
+	return starts;
 }
 
 function markdownCodeBlockRanges(source) {
@@ -178,20 +178,29 @@ function markdownCodeBlockRanges(source) {
 	return ranges;
 }
 
-function htmlTagEnd(source, start) {
-	let quote = "";
-	for (let i = start + 1; i < source.length; i++) {
+// tagEnds[i] is the closing ">" found by scanning from i outside quotes, or -1.
+// Built right to left once so repeated unterminated tags stay linear.
+function htmlTagEnds(source) {
+	const tagEnds = new Int32Array(source.length + 1).fill(-1);
+	let nextDoubleQuote = -1;
+	let nextSingleQuote = -1;
+
+	for (let i = source.length - 1; i >= 0; i--) {
 		const character = source[i];
-		if (quote.length > 0) {
-			if (character === quote) quote = "";
+		if (character === ">") {
+			tagEnds[i] = i;
 		} else if (character === '"' || character === "'") {
-			quote = character;
-		} else if (character === ">") {
-			return i;
+			const closing = character === '"' ? nextDoubleQuote : nextSingleQuote;
+			tagEnds[i] = closing < 0 ? -1 : tagEnds[closing + 1];
+		} else {
+			tagEnds[i] = tagEnds[i + 1];
 		}
+
+		if (character === '"') nextDoubleQuote = i;
+		else if (character === "'") nextSingleQuote = i;
 	}
 
-	return -1;
+	return tagEnds;
 }
 
 function htmlAttribute(tag, name) {
@@ -215,13 +224,13 @@ function markdownLink(label, target) {
 		: safeLabel;
 }
 
-function htmlImageLink(source, start) {
+function htmlImageLink(source, start, tagEnds) {
 	if (source.slice(start, start + 4).toLowerCase() !== "<img") return null;
 
 	const boundary = source[start + 4] || "";
 	if (boundary.length > 0 && !/[\s/>]/.test(boundary)) return null;
 
-	const end = htmlTagEnd(source, start);
+	const end = tagEnds[start + 1];
 	if (end < 0) return null;
 
 	const tag = source.slice(start, end + 1);
@@ -240,6 +249,8 @@ function renderImagesAsLinks(markdown) {
 	let result = "";
 	let codeDelimiterLength = 0;
 	let codeBlockIndex = 0;
+	const lastRunStarts = lastBacktickRunStarts(source);
+	let tagEnds = null;
 
 	for (let i = 0; i < source.length; ) {
 		while (
@@ -270,7 +281,7 @@ function renderImagesAsLinks(markdown) {
 			if (codeDelimiterLength === runLength) codeDelimiterLength = 0;
 			else if (
 				codeDelimiterLength === 0 &&
-				hasClosingBacktickRun(source, end, runLength)
+				(lastRunStarts[runLength] ?? -1) >= end
 			)
 				codeDelimiterLength = runLength;
 
@@ -280,7 +291,8 @@ function renderImagesAsLinks(markdown) {
 		}
 
 		if (codeDelimiterLength === 0 && source[i] === "<") {
-			const imageLink = htmlImageLink(source, i);
+			if (!tagEnds) tagEnds = htmlTagEnds(source);
+			const imageLink = htmlImageLink(source, i, tagEnds);
 			if (imageLink) {
 				result += imageLink.text;
 				i = imageLink.end + 1;

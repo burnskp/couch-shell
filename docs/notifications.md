@@ -116,6 +116,16 @@ Use `history` when:
 
 The manager keeps these in sync when notifications arrive, update, or close.
 
+History keeps at most `maxHistoryEntries` rows (from `ShellConfig.notificationHistoryLimit`,
+the `notifications.historyLimit` Nix option, default 200). Inserting past the cap evicts
+the oldest rows through `removeHistoryAt()`, which also clears their remote-id and
+rollup-key lookups.
+
+`unreadCount` and `statusNotificationCount` are maintained incrementally: every history
+mutation subtracts the old row's `NotificationLogic.countContribution()` and adds the new
+one through `adjustNotificationCounts()`. Do not reintroduce full-history recounts on
+arrival; new mutation paths should adjust counts the same way.
+
 ## DND and Status Display
 
 Use these shared fields rather than recomputing notification status in the UI:

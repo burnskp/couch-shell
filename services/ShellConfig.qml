@@ -56,6 +56,8 @@ QtObject {
     readonly property string aiUsageHoverProviders: stringToken("__AI_USAGE_HOVER_PROVIDERS__", "all")
     readonly property string aiUsageRefreshIntervalToken: "__AI_USAGE_REFRESH_INTERVAL__"
     readonly property int aiUsageRefreshInterval: Number(aiUsageRefreshIntervalToken) > 0 ? Number(aiUsageRefreshIntervalToken) : 300
+    readonly property string notificationHistoryLimitToken: "__NOTIFICATION_HISTORY_LIMIT__"
+    readonly property int notificationHistoryLimit: Number(notificationHistoryLimitToken) > 0 ? Number(notificationHistoryLimitToken) : 200
     readonly property string barHeightToken: "__BAR_HEIGHT__"
     readonly property int barHeight: Number(barHeightToken) > 0 ? Number(barHeightToken) : 20
     readonly property string barTemperatureEnableToken: "__BAR_TEMPERATURE_ENABLE__"

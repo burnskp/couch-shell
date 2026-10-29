@@ -79,6 +79,33 @@ TestCase {
         verify(!item.text.includes("![tracking pixel]"));
     }
 
+    function test_backtick_spans_track_matching_run_lengths() {
+        compare(MarkdownLogic.renderImagesAsLinks("`a` ![i](u) ``b`` ![j](v)"), "`a` [i](u) ``b`` [j](v)");
+        compare(MarkdownLogic.renderImagesAsLinks("`` ![i](u) ` ``"), "`` ![i](u) ` ``");
+        compare(MarkdownLogic.renderImagesAsLinks("``` ![i](u) `` ![j](v)"), "``` [i](u) `` [j](v)");
+    }
+
+    function test_html_image_tags_respect_quoted_delimiters() {
+        compare(MarkdownLogic.renderImagesAsLinks("<img alt=\"a>b\" src='u'> after"), "[a>b](u) after");
+        compare(MarkdownLogic.renderImagesAsLinks("<img alt='it\"s' src=\"u\">"), "[it\"s](u)");
+        compare(MarkdownLogic.renderImagesAsLinks("<img alt=\"open > ![i](u)"), "<img alt=\"open > [i](u)");
+        compare(MarkdownLogic.renderImagesAsLinks("<img src=u"), "<img src=u");
+    }
+
+    function test_unterminated_markup_renders_in_linear_time() {
+        const imagePrefixes = "<img \"".repeat(10000) + "<img ".repeat(10000) + "![i](u)";
+        const backtickRuns = "x`y``".repeat(20000) + "![i](u)";
+        const started = Date.now();
+
+        const renderedImages = MarkdownLogic.renderImagesAsLinks(imagePrefixes);
+        const renderedBackticks = MarkdownLogic.renderImagesAsLinks(backtickRuns);
+
+        verify(Date.now() - started < 2000, "rendering took " + (Date.now() - started) + "ms");
+        verify(renderedImages.endsWith("[i](u)"));
+        compare(renderedImages.length, imagePrefixes.length - 1);
+        verify(renderedBackticks.startsWith("x`y``"));
+    }
+
     function test_images_stay_literal_in_native_markdown_code_blocks() {
         const tildeFence = "~~~markdown\n![diagram](https://example.com/diagram.png)\n<img src=\"https://example.com/other.png\">\n~~~";
         const indented = "    ![diagram](https://example.com/diagram.png)\n\t<img src=\"https://example.com/other.png\">";

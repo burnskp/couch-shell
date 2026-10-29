@@ -96,6 +96,7 @@ RowLayout {
                         anchors.rightMargin: Theme.Theme.modulePadding
                         elide: Text.ElideRight
                         text: windowChip.title
+                        textFormat: Text.PlainText
                         font.family: Theme.Theme.fontFamily
                         font.pixelSize: Theme.Theme.fontSize
                         font.weight: Theme.Theme.fontWeight

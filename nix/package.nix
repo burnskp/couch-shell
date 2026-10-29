@@ -27,6 +27,9 @@
   theme ? {
     flavor = "latte";
   },
+  notifications ? {
+    historyLimit = 200;
+  },
   bar ? {
     height = 20;
     aiUsage = {
@@ -103,6 +106,7 @@ let
   escapeQmlString = value: lib.replaceStrings [ "\\" "\"" ] [ "\\\\" "\\\"" ] value;
   fontSize = normalizedFonts.size;
   barHeight = lib.attrByPath [ "height" ] 20 bar;
+  notificationHistoryLimit = lib.attrByPath [ "historyLimit" ] 200 notifications;
   aiUsageProviders = [
     "chatgpt"
     "claude"
@@ -159,6 +163,9 @@ let
 in
 assert lib.assertMsg (lib.elem normalizedTheme.flavor catppuccinFlavors)
   "couch-shell: theme.flavor must be one of ${lib.concatStringsSep ", " catppuccinFlavors}";
+assert lib.assertMsg (
+  builtins.isInt notificationHistoryLimit && notificationHistoryLimit > 0
+) "couch-shell: notifications.historyLimit must be a positive integer";
 assert lib.assertMsg (lib.elem aiUsageDefaultProvider aiUsageProviders)
   "couch-shell: bar.aiUsage.defaultProvider must be one of ${lib.concatStringsSep ", " aiUsageProviders}";
 assert lib.assertMsg (lib.elem aiUsageHoverProviders aiUsageHoverProviderModes)
@@ -249,6 +256,7 @@ stdenvNoCC.mkDerivation {
       --replace-fail '__AI_USAGE_DEFAULT_PROVIDER__' '${aiUsageDefaultProvider}' \
       --replace-fail '__AI_USAGE_HOVER_PROVIDERS__' '${aiUsageHoverProviders}' \
       --replace-fail '__AI_USAGE_REFRESH_INTERVAL__' '${toString aiUsageRefreshInterval}' \
+      --replace-fail '__NOTIFICATION_HISTORY_LIMIT__' '${toString notificationHistoryLimit}' \
       --replace-fail '__BAR_TEMPERATURE_ENABLE__' '${
         if bar.temperature.enable then "true" else "false"
       }' \

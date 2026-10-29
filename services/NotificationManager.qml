@@ -26,6 +26,7 @@ QtObject {
 
     property int nextToastId: 1
     property int nextHistoryId: 1
+    property int maxHistoryEntries: Services.ShellConfig.notificationHistoryLimit
     property var historyIdsByRemoteId: ({})
     property var historyIdsByRollupKey: ({})
     property var toastIdsByRemoteId: ({})
@@ -224,6 +225,8 @@ QtObject {
         if (existingIndex >= 0) {
             const existing = historyModel.get(existingIndex);
             const existingRollupKey = historyRollupKey(existing);
+
+            adjustNotificationCounts(existing, -1);
             const existingUnreadRollupCount = Math.max(0, Number(existing.unreadRollupCount ?? (existing.read ? 0 : 1)));
             const nextRollupCount = Math.max(1, Number(existing.rollupCount ?? 1)) + (rolledUp ? 1 : 0);
             const nextUnreadRollupCount = rolledUp
@@ -244,6 +247,7 @@ QtObject {
             historyModel.setProperty(existingIndex, "read", nextUnreadRollupCount === 0);
             historyModel.setProperty(existingIndex, "rollupCount", nextRollupCount);
             historyModel.setProperty(existingIndex, "unreadRollupCount", nextUnreadRollupCount);
+            adjustNotificationCounts(historyModel.get(existingIndex), 1);
 
             if (payload.remoteId.length > 0)
                 root.historyIdsByRemoteId[payload.remoteId] = targetHistoryId;
@@ -253,7 +257,6 @@ QtObject {
             if (existingIndex > 0)
                 historyModel.move(existingIndex, 0, 1);
 
-            recomputeNotificationCounts();
             return targetHistoryId;
         }
 
@@ -282,17 +285,24 @@ QtObject {
 
         root.historyIdsByRollupKey[rollupKey] = historyId;
 
-        recomputeNotificationCounts();
+        adjustNotificationCounts(historyModel.get(0), 1);
+
+        while (historyModel.count > Math.max(1, root.maxHistoryEntries))
+            removeHistoryAt(historyModel.count - 1);
+
         return historyId;
     }
 
     function removeHistory(historyId) {
         const index = indexOfHistory(historyId);
 
-        if (index < 0)
-            return;
+        if (index >= 0)
+            removeHistoryAt(index);
+    }
 
+    function removeHistoryAt(index) {
         const notification = historyModel.get(index);
+        const historyId = notification.historyId;
         const remoteId = notification.remoteId;
         const rollupKey = historyRollupKey(notification);
 
@@ -302,20 +312,15 @@ QtObject {
         if (root.historyIdsByRollupKey[rollupKey] === historyId)
             delete root.historyIdsByRollupKey[rollupKey];
 
+        adjustNotificationCounts(notification, -1);
         historyModel.remove(index);
-        recomputeNotificationCounts();
     }
 
-    function recomputeNotificationCounts() {
-        const notifications = [];
+    function adjustNotificationCounts(notification, sign) {
+        const contribution = NotificationLogic.countContribution(notification, root.urgencyLow);
 
-        for (let index = 0; index < historyModel.count; index += 1)
-            notifications.push(historyModel.get(index));
-
-        const counts = NotificationLogic.recomputeCounts(notifications, root.urgencyLow);
-
-        root.unreadCount = counts.unreadCount;
-        root.statusNotificationCount = counts.statusNotificationCount;
+        root.unreadCount += sign * contribution.unreadCount;
+        root.statusNotificationCount += sign * contribution.statusNotificationCount;
     }
 
     function notificationTimeoutFromServer(expireTimeout) {

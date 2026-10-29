@@ -82,4 +82,28 @@ TestCase {
         compare(counts.unreadCount, 2);
         compare(counts.statusNotificationCount, 2);
     }
+
+    function test_count_contribution_matches_recompute_counts() {
+        const notifications = [
+            {read: false, urgency: "low"},
+            {read: true, urgency: "normal", rollupCount: 3, unreadRollupCount: 0},
+            {read: false, urgency: "critical", rollupCount: 4, unreadRollupCount: 2},
+            {read: false, urgency: "normal", rollupCount: 2}
+        ];
+        let unreadCount = 0;
+        let statusNotificationCount = 0;
+
+        for (const notification of notifications) {
+            const contribution = NotificationLogic.countContribution(notification, urgencyOptions.low);
+            unreadCount += contribution.unreadCount;
+            statusNotificationCount += contribution.statusNotificationCount;
+        }
+
+        compare(NotificationLogic.countContribution(notifications[0], urgencyOptions.low), {unreadCount: 1, statusNotificationCount: 0});
+        compare(NotificationLogic.countContribution(notifications[3], urgencyOptions.low), {unreadCount: 2, statusNotificationCount: 2});
+        compare(NotificationLogic.recomputeCounts(notifications, urgencyOptions.low), {
+            unreadCount: unreadCount,
+            statusNotificationCount: statusNotificationCount
+        });
+    }
 }
