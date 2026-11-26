@@ -33,6 +33,7 @@ let
       inherit (cfg.bar)
         height
         widgets
+        cpu
         disk
         aiUsage
         ;
@@ -177,6 +178,20 @@ in
           "clock"
         ];
         description = "Right-side bar widgets, in display order (left to right, before the tray and system menu). Widgets left out are hidden and their bar-only polling stops. The workspace strip, window list, tray and system menu are always shown.";
+      };
+
+      cpu = {
+        showClusterBars = lib.mkOption {
+          type = lib.types.bool;
+          default = defaults.bar.cpu.showClusterBars;
+          description = "Whether the CPU hover draws a usage bar between each core-type label (Performance, Efficient, ...) and its percentage.";
+        };
+
+        showCores = lib.mkOption {
+          type = lib.types.bool;
+          default = defaults.bar.cpu.showCores;
+          description = "Whether the CPU hover lists per-core usage under each core-type row.";
+        };
       };
 
       aiUsage = {

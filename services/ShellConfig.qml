@@ -85,6 +85,11 @@ QtObject {
     readonly property int aiUsageRefreshInterval: Number(aiUsageRefreshIntervalToken) > 0 ? Number(aiUsageRefreshIntervalToken) : 300
     readonly property string notificationHistoryLimitToken: "__NOTIFICATION_HISTORY_LIMIT__"
     readonly property int notificationHistoryLimit: Number(notificationHistoryLimitToken) > 0 ? Number(notificationHistoryLimitToken) : 200
+    // CPU hover layout. Anything other than "false" (including an unsubstituted token) keeps the default.
+    readonly property string barCpuShowClusterBarsToken: "__BAR_CPU_SHOW_CLUSTER_BARS__"
+    readonly property bool barCpuShowClusterBars: barCpuShowClusterBarsToken !== "false"
+    readonly property string barCpuShowCoresToken: "__BAR_CPU_SHOW_CORES__"
+    readonly property bool barCpuShowCores: barCpuShowCoresToken !== "false"
     readonly property string barHeightToken: "__BAR_HEIGHT__"
     readonly property int barHeight: Number(barHeightToken) > 0 ? Number(barHeightToken) : 20
     readonly property string barTemperatureEnableToken: "__BAR_TEMPERATURE_ENABLE__"

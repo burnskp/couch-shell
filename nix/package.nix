@@ -42,6 +42,10 @@
       "audio"
       "clock"
     ];
+    cpu = {
+      showClusterBars = true;
+      showCores = true;
+    };
     aiUsage = {
       defaultProvider = "chatgpt";
       hoverProviders = "all";
@@ -128,6 +132,8 @@ let
     "clock"
   ];
   barWidgets = lib.attrByPath [ "widgets" ] (lib.remove "aiUsage" barWidgetIds) bar;
+  cpuShowClusterBars = lib.attrByPath [ "cpu" "showClusterBars" ] true bar;
+  cpuShowCores = lib.attrByPath [ "cpu" "showCores" ] true bar;
   notificationHistoryLimit = lib.attrByPath [ "historyLimit" ] 200 notifications;
   aiUsageProviders = [
     "chatgpt"
@@ -191,6 +197,9 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   lib.length (lib.unique barWidgets) == lib.length barWidgets
 ) "couch-shell: bar.widgets must not list a widget more than once";
+assert lib.assertMsg (
+  builtins.isBool cpuShowClusterBars && builtins.isBool cpuShowCores
+) "couch-shell: bar.cpu.showClusterBars and bar.cpu.showCores must be booleans";
 assert lib.assertMsg (
   builtins.isInt notificationHistoryLimit && notificationHistoryLimit > 0
 ) "couch-shell: notifications.historyLimit must be a positive integer";
@@ -281,6 +290,8 @@ stdenvNoCC.mkDerivation {
       --replace-fail '__BTRFS_CLIENT__' "$out/bin/couch-shell-btrfs-client" \
       --replace-fail '__BAR_DISK_JSON__' ${lib.escapeShellArg (escapeQmlString diskJson)} \
       --replace-fail '__BAR_WIDGETS_JSON__' '${escapeQmlString (builtins.toJSON barWidgets)}' \
+      --replace-fail '__BAR_CPU_SHOW_CLUSTER_BARS__' '${lib.boolToString cpuShowClusterBars}' \
+      --replace-fail '__BAR_CPU_SHOW_CORES__' '${lib.boolToString cpuShowCores}' \
       --replace-fail '__BAR_HEIGHT__' '${toString barHeight}' \
       --replace-fail '__AI_USAGE_DEFAULT_PROVIDER__' '${aiUsageDefaultProvider}' \
       --replace-fail '__AI_USAGE_HOVER_PROVIDERS__' '${aiUsageHoverProviders}' \

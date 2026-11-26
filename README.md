@@ -90,6 +90,8 @@ The Home Manager runtime configuration surface is intentionally small:
 - `bar.disk.btrfs.pollInterval` (default `300` seconds)
 - `bar.height`
 - `bar.widgets` (ordered list of right-side widgets; see [Bar widgets](#bar-widgets))
+- `bar.cpu.showClusterBars` (default `true`; usage bar between each core-type label and its percentage in the CPU hover)
+- `bar.cpu.showCores` (default `true`; per-core usage list in the CPU hover)
 - `bar.aiUsage.defaultProvider` (`chatgpt` or `claude`, default `chatgpt`)
 - `bar.aiUsage.hoverProviders` (`all` or `current`, default `all`)
 - `bar.aiUsage.refreshInterval` (default `300` seconds)

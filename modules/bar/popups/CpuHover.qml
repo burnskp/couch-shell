@@ -73,6 +73,7 @@ Components.HoverPopupFrame {
                 // One character of padding matches the label-to-bar gap on the other hovers.
                 labelColumnWidth: Math.ceil(clusterLabelMetrics.advanceWidth("Performance") + clusterLabelMetrics.advanceWidth(" "))
                 valueText: root.averageUsage(clusterSection.modelData.cores) + "%"
+                showBar: Services.ShellConfig.barCpuShowClusterBars
                 barValue: root.averageUsage(clusterSection.modelData.cores) / 100
             }
 
@@ -80,7 +81,7 @@ Components.HoverPopupFrame {
             Flow {
                 id: coreFlow
 
-                visible: clusterSection.modelData.cores.length > 1
+                visible: Services.ShellConfig.barCpuShowCores && clusterSection.modelData.cores.length > 1
                 Layout.fillWidth: true
                 spacing: 6
 

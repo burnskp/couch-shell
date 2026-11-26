@@ -56,6 +56,10 @@
             "audio"
             "clock"
           ];
+          cpu = {
+            showClusterBars = true;
+            showCores = true;
+          };
           aiUsage = {
             defaultProvider = "chatgpt";
             hoverProviders = "all";
