@@ -161,6 +161,45 @@ TestCase {
         compare(second.cpuCores[2].usagePercent, 50);
     }
 
+    function test_classify_cpu_core_types_merges_favored_performance_cores() {
+        // 4 P-cores with two favored cores boosting slightly higher, plus 4 LP E-cores.
+        const types = SystemStatsLogic.classifyCpuCoreTypes([4800000, 4700000, 4800000, 4700000, 3300000, 3300000, 3300000, 3300000]).map(core => core.coreType);
+
+        compare(types, ["performance", "performance", "performance", "performance", "efficient", "efficient", "efficient", "efficient"]);
+    }
+
+    function test_classify_cpu_core_types_marks_cores_outside_l3_as_low_power() {
+        // Panther Lake 4P + 4 LP E: favored P-core at 4.8 GHz, LP E-cores have no L3.
+        const types = SystemStatsLogic.classifyCpuCoreTypes([4700000, 4800000, 4700000, 4700000, 3500000, 3500000, 3500000, 3500000], [true, true, true, true, false, false, false, false]).map(core => core.coreType);
+
+        compare(types, ["performance", "performance", "performance", "performance", "lowPowerEfficient", "lowPowerEfficient", "lowPowerEfficient", "lowPowerEfficient"]);
+    }
+
+    function test_classify_cpu_core_types_ignores_l3_when_all_cores_share_it() {
+        const types = SystemStatsLogic.classifyCpuCoreTypes([5600000, 5600000, 4400000, 4400000], [true, true, true, true]).map(core => core.coreType);
+
+        compare(types, ["performance", "performance", "efficient", "efficient"]);
+    }
+
+    function test_parse_aggregate_status_reads_l3_presence() {
+        const parsed = SystemStatsLogic.parseAggregateStatus(["memTotalKb=8192", "memAvailableKb=2048", "swapTotalKb=0", "swapFreeKb=0", "cpuTotalTicks=100", "cpuIdleTicks=50", "cpu0TotalTicks=50", "cpu0IdleTicks=10", "cpu1TotalTicks=50", "cpu1IdleTicks=15", "cpu0MaxFreqKhz=4800000", "cpu1MaxFreqKhz=3500000", "cpu0HasL3=1", "cpu1HasL3=0"].join("\n"), 0, 0, 0, [], [], []);
+
+        compare(parsed.cpuCores[0].coreType, "performance");
+        compare(parsed.cpuCores[1].coreType, "lowPowerEfficient");
+    }
+
+    function test_classify_cpu_core_types_keeps_three_real_clusters() {
+        const types = SystemStatsLogic.classifyCpuCoreTypes([4800000, 4700000, 3800000, 3800000, 2500000]).map(core => core.coreType);
+
+        compare(types, ["performance", "performance", "efficient", "efficient", "lowPowerEfficient"]);
+    }
+
+    function test_classify_cpu_core_types_treats_near_uniform_cores_as_unknown() {
+        const types = SystemStatsLogic.classifyCpuCoreTypes([5000000, 4900000, 5000000]).map(core => core.coreType);
+
+        compare(types, ["unknown", "unknown", "unknown"]);
+    }
+
     function test_parse_top_processes_snapshot_sorts_cpu_and_memory() {
         const parsed = SystemStatsLogic.parseTopProcessesSnapshot(["100 12.5 2048 firefox --profile default", "200 55.2 1024 /etc/profiles/per-user/llama/bin/Hyprland", "300 3.0 8192 qmlscene --platform offscreen", "400 1.0 4096 ps", "500 2.0 512 sh"].join("\n"));
 

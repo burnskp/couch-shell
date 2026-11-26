@@ -243,6 +243,15 @@ Item {
             '  if [ -r "$freq_path" ]; then',
             '    printf "cpu%sMaxFreqKhz=%s\\n" "$cpu_index" "$(tr -d "\\n" < "$freq_path")"',
             '  fi',
+            '  if [ -d "$cpu_path/cache" ]; then',
+            '    cpu_has_l3=0',
+            '    for level_path in "$cpu_path"/cache/index*/level; do',
+            '      [ -r "$level_path" ] || continue',
+            '      read -r cache_level < "$level_path" || cache_level=""',
+            '      if [ "$cache_level" = 3 ]; then cpu_has_l3=1; break; fi',
+            '    done',
+            '    printf "cpu%sHasL3=%s\\n" "$cpu_index" "$cpu_has_l3"',
+            '  fi',
             'done'
         ].join("\n");
     }

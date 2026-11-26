@@ -133,38 +133,72 @@ function parseCpuCoreMaxFrequencies(data, coreCount) {
 	return frequencies;
 }
 
-function classifyCpuCoreTypes(maxFrequencies) {
-	const frequencyGroups = [];
+// Cores whose max frequency is within this fraction of the fastest core in a
+// cluster are treated as the same core type. Intel "favored" P-cores (Turbo
+// Boost Max 3.0) typically boost 100-200 MHz above their siblings, which must
+// not split the P-core cluster, while real P/E/LP-E gaps are 15% or more.
+const CPU_CLUSTER_FREQUENCY_TOLERANCE = 0.08;
+
+function groupCpuFrequencies(maxFrequencies) {
 	const sortedFrequencies = Array.from(
 		new Set(maxFrequencies.filter((value) => value > 0)),
 	).sort((left, right) => right - left);
+	const groups = [];
 
-	for (
-		let groupIndex = 0;
-		groupIndex < sortedFrequencies.length;
-		groupIndex += 1
-	) {
-		const frequency = sortedFrequencies[groupIndex];
-		let coreType = "efficient";
-
-		if (sortedFrequencies.length === 1) coreType = "unknown";
-		else if (sortedFrequencies.length === 2)
-			coreType = groupIndex === 0 ? "performance" : "efficient";
-		else if (groupIndex === 0) coreType = "performance";
-		else if (groupIndex === sortedFrequencies.length - 1)
-			coreType = "lowPowerEfficient";
-
-		frequencyGroups.push({
-			frequency: frequency,
-			coreType: coreType,
-		});
+	for (const frequency of sortedFrequencies) {
+		const current = groups[groups.length - 1];
+		if (
+			current &&
+			frequency >= current.topFrequency * (1 - CPU_CLUSTER_FREQUENCY_TOLERANCE)
+		)
+			current.frequencies.push(frequency);
+		else groups.push({ topFrequency: frequency, frequencies: [frequency] });
 	}
 
-	return maxFrequencies.map((frequency) => {
-		const match = frequencyGroups.find(
-			(group) => group.frequency === frequency,
-		);
-		const coreType = match ? match.coreType : "unknown";
+	return groups;
+}
+
+function parseCpuCoreL3Presence(data, coreCount) {
+	const presence = [];
+
+	for (let index = 0; index < coreCount; index += 1) {
+		const rawValue = data[`cpu${index}HasL3`];
+		presence.push(rawValue === "1" ? true : rawValue === "0" ? false : null);
+	}
+
+	return presence;
+}
+
+// hasL3 is an optional per-core array of true/false/null (null = unknown).
+// On Intel hybrid chips with LP E-cores (Meteor/Lunar/Panther Lake), the LP
+// E-cores sit outside the shared L3, so when some cores have an L3 and others
+// do not, the non-performance cores without one are low-power cores.
+function classifyCpuCoreTypes(maxFrequencies, hasL3) {
+	const l3Presence = hasL3 || [];
+	const l3IsSplit =
+		l3Presence.some((value) => value === true) &&
+		l3Presence.some((value) => value === false);
+	const groups = groupCpuFrequencies(maxFrequencies);
+	const coreTypeByFrequency = {};
+
+	for (let groupIndex = 0; groupIndex < groups.length; groupIndex += 1) {
+		let coreType = "efficient";
+
+		if (groups.length === 1) coreType = "unknown";
+		else if (groups.length === 2)
+			coreType = groupIndex === 0 ? "performance" : "efficient";
+		else if (groupIndex === 0) coreType = "performance";
+		else if (groupIndex === groups.length - 1) coreType = "lowPowerEfficient";
+
+		for (const frequency of groups[groupIndex].frequencies)
+			coreTypeByFrequency[frequency] = coreType;
+	}
+
+	return maxFrequencies.map((frequency, index) => {
+		let coreType = coreTypeByFrequency[frequency] || "unknown";
+
+		if (l3IsSplit && coreType === "efficient" && l3Presence[index] === false)
+			coreType = "lowPowerEfficient";
 
 		return {
 			coreType: coreType,
@@ -273,6 +307,7 @@ function parseAggregateStatus(
 	const cpuCoreSamples = parseCpuCoreSamples(data);
 	const cpuCoreTypes = classifyCpuCoreTypes(
 		parseCpuCoreMaxFrequencies(data, cpuCoreSamples.length),
+		parseCpuCoreL3Presence(data, cpuCoreSamples.length),
 	);
 	const memTotalKb = parseFloat(data.memTotalKb || "0");
 	const memAvailableKb = parseFloat(data.memAvailableKb || "0");
