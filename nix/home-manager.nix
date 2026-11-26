@@ -34,12 +34,14 @@ let
         height
         widgets
         cpu
+        ram
         disk
         aiUsage
         ;
       temperature = {
         inherit (cfg.bar.temperature)
           enable
+          showUnit
           textPath
           ;
         popupPaths =
@@ -194,6 +196,14 @@ in
         };
       };
 
+      ram = {
+        showUnit = lib.mkOption {
+          type = lib.types.bool;
+          default = defaults.bar.ram.showUnit;
+          description = "Whether the RAM widget text includes the `GiB` unit. The hover popup always shows units.";
+        };
+      };
+
       aiUsage = {
         defaultProvider = lib.mkOption {
           type = lib.types.enum [
@@ -270,6 +280,12 @@ in
           type = lib.types.bool;
           default = defaults.bar.temperature.enable;
           description = "Whether to show the bar temperature widget.";
+        };
+
+        showUnit = lib.mkOption {
+          type = lib.types.bool;
+          default = defaults.bar.temperature.showUnit;
+          description = "Whether the temperature widget text includes the `°C` unit. The hover popup always shows units.";
         };
 
         textPath = lib.mkOption {

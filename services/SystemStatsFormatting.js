@@ -1,5 +1,8 @@
-function formatTemperature(value) {
-	return Number.isFinite(value) ? `${Math.round(value)} °C` : "Unk";
+function formatTemperature(value, showUnit = true) {
+	if (!Number.isFinite(value)) return "Unk";
+
+	const rounded = Math.round(value);
+	return showUnit ? `${rounded} °C` : `${rounded}`;
 }
 
 function formatRpm(value) {
@@ -22,10 +25,12 @@ function formatBytes(bytes) {
 	return `${value.toFixed(precision)} ${units[unitIndex]}`;
 }
 
-function formatGib(bytes) {
-	if (!Number.isFinite(bytes) || bytes <= 0) return "0.0 GiB";
-
-	return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GiB`;
+function formatGib(bytes, showUnit = true) {
+	const value =
+		!Number.isFinite(bytes) || bytes <= 0
+			? "0.0"
+			: (bytes / (1024 * 1024 * 1024)).toFixed(1);
+	return showUnit ? `${value} GiB` : value;
 }
 
 function formatProcessCpuPercent(value) {

@@ -377,8 +377,8 @@ Item {
         updateTopProcessesPolling();
     }
 
-    function formatTemperature(value) {
-        return SystemStatsFormatting.formatTemperature(value);
+    function formatTemperature(value, showUnit) {
+        return SystemStatsFormatting.formatTemperature(value, showUnit !== false);
     }
 
     function formatBytes(bytes) {
@@ -389,8 +389,8 @@ Item {
         return SystemStatsFormatting.formatRpm(value);
     }
 
-    function formatGib(bytes) {
-        return SystemStatsFormatting.formatGib(bytes);
+    function formatGib(bytes, showUnit) {
+        return SystemStatsFormatting.formatGib(bytes, showUnit !== false);
     }
 
     function formatProcessCpuPercent(value) {

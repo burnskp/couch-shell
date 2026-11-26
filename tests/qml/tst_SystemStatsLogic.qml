@@ -13,6 +13,11 @@ TestCase {
         compare(SystemStatsFormatting.formatBytes(10 * 1024), "10 KiB");
         compare(SystemStatsFormatting.formatTemperature(NaN), "Unk");
         compare(SystemStatsFormatting.formatTemperature(42.34), "42 °C");
+        compare(SystemStatsFormatting.formatTemperature(42.34, false), "42");
+        compare(SystemStatsFormatting.formatTemperature(NaN, false), "Unk");
+        compare(SystemStatsFormatting.formatGib(0), "0.0 GiB");
+        compare(SystemStatsFormatting.formatGib(3 * 1024 * 1024 * 1024), "3.0 GiB");
+        compare(SystemStatsFormatting.formatGib(3 * 1024 * 1024 * 1024, false), "3.0");
         compare(SystemStatsFormatting.formatRpm(-1), "Unavailable");
         compare(SystemStatsFormatting.formatRpm(1540), "1540");
     }

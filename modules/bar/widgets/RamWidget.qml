@@ -9,7 +9,7 @@ Components.WidgetChip {
     popupPreset: Components.HoverPopupPresets.ram
     popupWidth: 292
     iconGlyph: ""
-    valueText: Services.SystemStatsState.memoryAvailableLabel
+    valueText: Services.SystemStatsState.formatGib(Services.SystemStatsState.memoryAvailableBytes, Services.ShellConfig.barRamShowUnit)
     popupContent: Component {
         Popups.RamHover {}
     }

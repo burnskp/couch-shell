@@ -60,6 +60,9 @@
             showClusterBars = true;
             showCores = true;
           };
+          ram = {
+            showUnit = true;
+          };
           aiUsage = {
             defaultProvider = "chatgpt";
             hoverProviders = "all";
@@ -86,6 +89,7 @@
           };
           temperature = {
             enable = true;
+            showUnit = true;
             textPath = "/sys/class/hwmon/hwmon9/temp1_input";
             popupPaths = {
               cpu = "/sys/class/hwmon/hwmon9/temp1_input";

@@ -7,12 +7,12 @@ import "../../../components" as Components
 Components.WidgetChip {
     id: root
 
-    readonly property real valueWidth: temperatureValueMetrics.advanceWidth("000 °C")
+    readonly property real valueWidth: temperatureValueMetrics.advanceWidth(Services.ShellConfig.barTemperatureShowUnit ? "000 °C" : "000")
 
     appearancePreset: Theme.WidgetStyles.metric
     popupWidth: 292
     iconGlyph: ""
-    valueText: Services.SystemStatsState.primaryTemperatureLabel
+    valueText: Services.SystemStatsState.formatTemperature(Services.SystemStatsState.primaryTemperatureC, Services.ShellConfig.barTemperatureShowUnit)
     preferredValueWidth: root.valueWidth
     valueHorizontalAlignment: Text.AlignRight
     popupContent: Component {

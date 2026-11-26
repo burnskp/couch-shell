@@ -46,6 +46,9 @@
       showClusterBars = true;
       showCores = true;
     };
+    ram = {
+      showUnit = true;
+    };
     aiUsage = {
       defaultProvider = "chatgpt";
       hoverProviders = "all";
@@ -72,6 +75,7 @@
     };
     temperature = {
       enable = true;
+      showUnit = true;
       textPath = "/sys/class/hwmon/hwmon9/temp1_input";
       popupPaths = {
         cpu = "/sys/class/hwmon/hwmon9/temp1_input";
@@ -134,6 +138,8 @@ let
   barWidgets = lib.attrByPath [ "widgets" ] (lib.remove "aiUsage" barWidgetIds) bar;
   cpuShowClusterBars = lib.attrByPath [ "cpu" "showClusterBars" ] true bar;
   cpuShowCores = lib.attrByPath [ "cpu" "showCores" ] true bar;
+  ramShowUnit = lib.attrByPath [ "ram" "showUnit" ] true bar;
+  temperatureShowUnit = lib.attrByPath [ "temperature" "showUnit" ] true bar;
   notificationHistoryLimit = lib.attrByPath [ "historyLimit" ] 200 notifications;
   aiUsageProviders = [
     "chatgpt"
@@ -200,6 +206,9 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   builtins.isBool cpuShowClusterBars && builtins.isBool cpuShowCores
 ) "couch-shell: bar.cpu.showClusterBars and bar.cpu.showCores must be booleans";
+assert lib.assertMsg (
+  builtins.isBool ramShowUnit && builtins.isBool temperatureShowUnit
+) "couch-shell: bar.ram.showUnit and bar.temperature.showUnit must be booleans";
 assert lib.assertMsg (
   builtins.isInt notificationHistoryLimit && notificationHistoryLimit > 0
 ) "couch-shell: notifications.historyLimit must be a positive integer";
@@ -292,6 +301,8 @@ stdenvNoCC.mkDerivation {
       --replace-fail '__BAR_WIDGETS_JSON__' '${escapeQmlString (builtins.toJSON barWidgets)}' \
       --replace-fail '__BAR_CPU_SHOW_CLUSTER_BARS__' '${lib.boolToString cpuShowClusterBars}' \
       --replace-fail '__BAR_CPU_SHOW_CORES__' '${lib.boolToString cpuShowCores}' \
+      --replace-fail '__BAR_RAM_SHOW_UNIT__' '${lib.boolToString ramShowUnit}' \
+      --replace-fail '__BAR_TEMPERATURE_SHOW_UNIT__' '${lib.boolToString temperatureShowUnit}' \
       --replace-fail '__BAR_HEIGHT__' '${toString barHeight}' \
       --replace-fail '__AI_USAGE_DEFAULT_PROVIDER__' '${aiUsageDefaultProvider}' \
       --replace-fail '__AI_USAGE_HOVER_PROVIDERS__' '${aiUsageHoverProviders}' \
