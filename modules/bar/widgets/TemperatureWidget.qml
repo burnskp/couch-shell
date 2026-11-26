@@ -9,7 +9,6 @@ Components.WidgetChip {
 
     readonly property real valueWidth: temperatureValueMetrics.advanceWidth("000 °C")
 
-    visible: Services.ShellConfig.barTemperatureEnabled
     appearancePreset: Theme.WidgetStyles.metric
     popupWidth: 292
     iconGlyph: ""

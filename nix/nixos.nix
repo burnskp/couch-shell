@@ -11,6 +11,7 @@ let
     _: user:
     lib.attrByPath [ "programs" "couch-shell" "enable" ] false user
     && lib.attrByPath [ "programs" "couch-shell" "bar" "disk" "btrfs" "enable" ] false user
+    && lib.elem "disk" (lib.attrByPath [ "programs" "couch-shell" "bar" "widgets" ] [ "disk" ] user)
   ) hmUsers;
   intervals = lib.mapAttrsToList (
     _: user: user.programs.couch-shell.bar.disk.btrfs.pollInterval

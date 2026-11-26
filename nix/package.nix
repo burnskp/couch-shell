@@ -32,6 +32,16 @@
   },
   bar ? {
     height = 20;
+    widgets = [
+      "cpu"
+      "temperature"
+      "ram"
+      "disk"
+      "wifi"
+      "battery"
+      "audio"
+      "clock"
+    ];
     aiUsage = {
       defaultProvider = "chatgpt";
       hoverProviders = "all";
@@ -106,6 +116,18 @@ let
   escapeQmlString = value: lib.replaceStrings [ "\\" "\"" ] [ "\\\\" "\\\"" ] value;
   fontSize = normalizedFonts.size;
   barHeight = lib.attrByPath [ "height" ] 20 bar;
+  barWidgetIds = [
+    "cpu"
+    "temperature"
+    "ram"
+    "disk"
+    "aiUsage"
+    "wifi"
+    "battery"
+    "audio"
+    "clock"
+  ];
+  barWidgets = lib.attrByPath [ "widgets" ] (lib.remove "aiUsage" barWidgetIds) bar;
   notificationHistoryLimit = lib.attrByPath [ "historyLimit" ] 200 notifications;
   aiUsageProviders = [
     "chatgpt"
@@ -163,6 +185,12 @@ let
 in
 assert lib.assertMsg (lib.elem normalizedTheme.flavor catppuccinFlavors)
   "couch-shell: theme.flavor must be one of ${lib.concatStringsSep ", " catppuccinFlavors}";
+assert lib.assertMsg (
+  builtins.isList barWidgets && lib.all (id: lib.elem id barWidgetIds) barWidgets
+) "couch-shell: bar.widgets entries must be among ${lib.concatStringsSep ", " barWidgetIds}";
+assert lib.assertMsg (
+  lib.length (lib.unique barWidgets) == lib.length barWidgets
+) "couch-shell: bar.widgets must not list a widget more than once";
 assert lib.assertMsg (
   builtins.isInt notificationHistoryLimit && notificationHistoryLimit > 0
 ) "couch-shell: notifications.historyLimit must be a positive integer";
@@ -252,6 +280,7 @@ stdenvNoCC.mkDerivation {
       --replace-fail '__NOTIFICATION_TOAST_FONT_SIZE__' '${toString normalizedFonts.notificationToastSize}' \
       --replace-fail '__BTRFS_CLIENT__' "$out/bin/couch-shell-btrfs-client" \
       --replace-fail '__BAR_DISK_JSON__' ${lib.escapeShellArg (escapeQmlString diskJson)} \
+      --replace-fail '__BAR_WIDGETS_JSON__' '${escapeQmlString (builtins.toJSON barWidgets)}' \
       --replace-fail '__BAR_HEIGHT__' '${toString barHeight}' \
       --replace-fail '__AI_USAGE_DEFAULT_PROVIDER__' '${aiUsageDefaultProvider}' \
       --replace-fail '__AI_USAGE_HOVER_PROVIDERS__' '${aiUsageHoverProviders}' \

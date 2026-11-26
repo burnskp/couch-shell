@@ -30,7 +30,12 @@ let
       inherit (cfg.notifications) historyLimit;
     };
     bar = {
-      inherit (cfg.bar) height disk aiUsage;
+      inherit (cfg.bar)
+        height
+        widgets
+        disk
+        aiUsage
+        ;
       temperature = {
         inherit (cfg.bar.temperature)
           enable
@@ -143,6 +148,35 @@ in
         type = lib.types.ints.positive;
         default = defaults.bar.height;
         description = "Height of the top bar in pixels.";
+      };
+
+      widgets = lib.mkOption {
+        type = lib.types.listOf (
+          lib.types.enum [
+            "cpu"
+            "temperature"
+            "ram"
+            "disk"
+            "aiUsage"
+            "wifi"
+            "battery"
+            "audio"
+            "clock"
+          ]
+        );
+        default = defaults.bar.widgets;
+        defaultText = lib.literalExpression ''
+          [ "cpu" "temperature" "ram" "disk" "wifi" "battery" "audio" "clock" ]
+        '';
+        example = [
+          "aiUsage"
+          "cpu"
+          "ram"
+          "battery"
+          "audio"
+          "clock"
+        ];
+        description = "Right-side bar widgets, in display order (left to right, before the tray and system menu). Widgets left out are hidden and their bar-only polling stops. The workspace strip, window list, tray and system menu are always shown.";
       };
 
       aiUsage = {
@@ -272,6 +306,10 @@ in
       {
         assertion = cfg.bar.disk.criticalThresholdGiB < cfg.bar.disk.warningThresholdGiB;
         message = "couch-shell: bar.disk.criticalThresholdGiB must be lower than warningThresholdGiB";
+      }
+      {
+        assertion = lib.length (lib.unique cfg.bar.widgets) == lib.length cfg.bar.widgets;
+        message = "couch-shell: bar.widgets must not list a widget more than once";
       }
     ];
     home.packages = [ cfg.package ];

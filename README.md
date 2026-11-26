@@ -89,6 +89,7 @@ The Home Manager runtime configuration surface is intentionally small:
 - `bar.disk.btrfs.enable` (default `false`)
 - `bar.disk.btrfs.pollInterval` (default `300` seconds)
 - `bar.height`
+- `bar.widgets` (ordered list of right-side widgets; see [Bar widgets](#bar-widgets))
 - `bar.aiUsage.defaultProvider` (`chatgpt` or `claude`, default `chatgpt`)
 - `bar.aiUsage.hoverProviders` (`all` or `current`, default `all`)
 - `bar.aiUsage.refreshInterval` (default `300` seconds)
@@ -97,7 +98,7 @@ The Home Manager runtime configuration surface is intentionally small:
 - `bar.temperature.popupPaths`
 - `bar.temperature.fanPaths`
 
-Bar ordering, spacing, and most theme defaults are kept in code rather than exposed as user options.
+Bar spacing and most theme defaults are kept in code rather than exposed as user options.
 
 ### Theme
 
@@ -212,6 +213,16 @@ programs.couch-shell.bar.disk.btrfs = {
 The NixOS module automatically installs one shared, socket-activated root collector for enabled users. Log in again after activation to pick up the `couch-shell-btrfs` group. This hover replaces `popupPaths`, including an empty list, and shows mounted volumes, subvolume referenced/exclusive usage when accounting is valid, and snapshot counts. The chip still uses `textPath` at its existing 15-second interval. Hiding the bar stops Btrfs requests; the system service has no periodic timer.
 
 Standalone Home Manager and direct package consumers must provision the root collector separately; enabling a user option cannot install a system service. See [`docs/bar.md`](docs/bar.md#automatic-btrfs-hover) for system provisioning, accounting states, access permissions, and diagnostics. Leaving Btrfs disabled preserves the manual hover.
+
+### Bar widgets
+
+`bar.widgets` controls which right-side widgets are shown and their left-to-right order. Valid ids are `cpu`, `temperature`, `ram`, `disk`, `aiUsage`, `wifi`, `battery`, `audio`, and `clock`; each may appear once. The default is every widget except `aiUsage`:
+
+```nix
+programs.couch-shell.bar.widgets = [ "cpu" "temperature" "ram" "disk" "wifi" "battery" "audio" "clock" ];
+```
+
+Add `"aiUsage"` to show the AI subscription usage chip. The workspace strip, window list, tray, and system menu are always shown. Omitted widgets also stop their bar-only polling: AI usage requests, temperature sensors, CPU/RAM sampling (when both are omitted), and disk popup and Btrfs queries. Low-disk-space alerts for `bar.disk.textPath` keep working without the disk widget. `bar.temperature.enable = false` still hides the temperature widget even when it is listed.
 
 ### Temperature sensors
 

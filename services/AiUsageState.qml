@@ -22,7 +22,9 @@ Item {
     property string accountKey: ""
     property var resetRefreshRequested: ({})
     readonly property bool authenticated: Services.AiChatService.configured && !Services.AiChatService.authenticatedWorkBlocked
-    readonly property bool pollingEnabled: Services.BarManager.visible && authenticated && !Services.AiChatService.loginBusy
+    // Usage is only shown by the bar chip, so all polling stops when the chip is not configured.
+    readonly property bool active: Services.BarManager.visible && Services.ShellConfig.barWidgetEnabled("aiUsage")
+    readonly property bool pollingEnabled: active && authenticated && !Services.AiChatService.loginBusy
     readonly property var summary: Logic.summary(provider, now)
     readonly property bool stale: providerStale(provider)
     readonly property string message: providerMessage(provider)
@@ -80,7 +82,7 @@ Item {
     }
 
     function refreshClaude() {
-        if (root.claudeBusy || !Services.BarManager.visible)
+        if (root.claudeBusy || !root.active)
             return;
         root.now = Date.now();
         root.activeClaudeProcess = claudeProcessComponent.createObject(root);
@@ -129,14 +131,11 @@ Item {
         }
     }
 
-    Connections {
-        target: Services.BarManager
-        function onVisibleChanged() {
-            if (Services.BarManager.visible)
-                Qt.callLater(root.refreshClaude);
-            else
-                root.cancelClaude();
-        }
+    onActiveChanged: {
+        if (active)
+            Qt.callLater(root.refreshClaude);
+        else
+            root.cancelClaude();
     }
 
     Connections {
@@ -158,7 +157,7 @@ Item {
         Process {
             id: claudeProcess
             property bool received: false
-            readonly property bool current: root.activeClaudeProcess === claudeProcess && Services.BarManager.visible
+            readonly property bool current: root.activeClaudeProcess === claudeProcess && root.active
 
             stdout: StdioCollector {
                 onStreamFinished: {
@@ -209,7 +208,7 @@ Item {
 
     Timer {
         interval: Services.ShellConfig.aiUsageRefreshInterval * 1000
-        running: Services.BarManager.visible
+        running: root.active
         repeat: true
         onTriggered: {
             root.refresh();
@@ -221,7 +220,7 @@ Item {
         id: countdownTimer
         readonly property var windows: root.providers.reduce((all, entry) => all.concat(entry.windows), [])
         interval: Math.max(1, Logic.nextTick(windows, root.now))
-        running: Services.BarManager.visible && windows.length > 0
+        running: root.active && windows.length > 0
         repeat: true
         onTriggered: {
             root.now = Date.now();

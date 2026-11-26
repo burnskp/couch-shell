@@ -50,6 +50,12 @@ The system menu and notification history remain separate shell windows, but thei
 
 Idle inhibition is intentionally outside `BarContent` and `TopBar`. `IdleInhibitorWindow` provides the live, non-exclusive Wayland surface required by the idle-inhibit protocol, so a user-selected inhibitor remains active while bars are hidden.
 
+## Widget List
+
+`bar.widgets` (exposed as `Services.ShellConfig.barWidgets`) is the ordered list of right-side chips. `BarContent` renders it with a `Repeater` of `Loader`s keyed through `widgetComponents`, and passes the loaded items to `BarHoverPopupHost.trackedWidgets`. To add a configurable chip, add its id to `ShellConfig.barWidgetIds`, `widgetComponents`, and the id lists in `nix/package.nix` and `nix/home-manager.nix`.
+
+Services gate bar-only work with `Services.ShellConfig.barWidgetEnabled(id)` as well as `BarManager.visible`, so omitted widgets do no polling. Session-protecting work, such as widget-path low-disk alerts, does not depend on the list.
+
 ## Power Rules
 
 Recurring work that exists only to populate the bar must follow `BarManager.visible`.

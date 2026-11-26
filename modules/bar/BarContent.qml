@@ -12,6 +12,85 @@ Item {
 
     required property var anchorWindow
     required property var barScreen
+    // Maps bar.widgets ids (see ShellConfig.barWidgetIds) to their chips.
+    readonly property var widgetComponents: ({
+            cpu: cpuComponent,
+            temperature: temperatureComponent,
+            ram: ramComponent,
+            disk: diskComponent,
+            aiUsage: aiUsageComponent,
+            wifi: wifiComponent,
+            battery: batteryComponent,
+            audio: audioComponent,
+            clock: clockComponent
+        })
+    property var trackedWidgets: []
+
+    function syncTrackedWidgets() {
+        const widgets = [];
+        for (let index = 0; index < widgetRepeater.count; index++) {
+            const loader = widgetRepeater.itemAt(index) as Loader;
+            if (loader && loader.item)
+                widgets.push(loader.item);
+        }
+        root.trackedWidgets = widgets;
+    }
+
+    Component {
+        id: cpuComponent
+
+        Widgets.CpuWidget {}
+    }
+
+    Component {
+        id: temperatureComponent
+
+        Widgets.TemperatureWidget {}
+    }
+
+    Component {
+        id: ramComponent
+
+        Widgets.RamWidget {}
+    }
+
+    Component {
+        id: diskComponent
+
+        Widgets.DiskWidget {}
+    }
+
+    Component {
+        id: aiUsageComponent
+
+        Widgets.AiUsageWidget {
+            barScreen: root.barScreen
+        }
+    }
+
+    Component {
+        id: wifiComponent
+
+        Widgets.WifiWidget {}
+    }
+
+    Component {
+        id: batteryComponent
+
+        Widgets.BatteryWidget {}
+    }
+
+    Component {
+        id: audioComponent
+
+        Widgets.AudioWidget {}
+    }
+
+    Component {
+        id: clockComponent
+
+        Components.DigitalClock {}
+    }
 
     Rectangle {
         id: barSurface
@@ -51,59 +130,20 @@ Item {
             }
         }
 
-        Widgets.CpuWidget {
-            id: cpuWidget
+        Repeater {
+            id: widgetRepeater
 
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-        }
+            model: Services.ShellConfig.barWidgets
+            onItemAdded: root.syncTrackedWidgets()
+            onItemRemoved: Qt.callLater(root.syncTrackedWidgets)
 
-        Widgets.TemperatureWidget {
-            id: temperatureWidget
+            delegate: Loader {
+                required property string modelData
 
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-        }
-
-        Widgets.RamWidget {
-            id: ramWidget
-
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-        }
-
-        Widgets.DiskWidget {
-            id: diskWidget
-
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-        }
-
-        Widgets.AiUsageWidget {
-            id: aiUsageWidget
-
-            barScreen: root.barScreen
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-        }
-
-        Widgets.WifiWidget {
-            id: wifiWidget
-
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-        }
-
-        Widgets.BatteryWidget {
-            id: batteryWidget
-
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-        }
-
-        Widgets.AudioWidget {
-            id: audioWidget
-
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-        }
-
-        Components.DigitalClock {
-            id: clockWidget
-
-            Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
+                sourceComponent: root.widgetComponents[modelData] ?? null
+                onLoaded: root.syncTrackedWidgets()
+            }
         }
 
         Widgets.StatusClusterWidget {
@@ -123,7 +163,7 @@ Item {
         anchorSurface: barSurface
         openDelay: 500
         closeDelay: 120
-        trackedWidgets: [clockWidget, audioWidget, batteryWidget, wifiWidget, aiUsageWidget, diskWidget, ramWidget, temperatureWidget, cpuWidget]
+        trackedWidgets: root.trackedWidgets
     }
 
     Connections {

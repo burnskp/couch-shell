@@ -54,7 +54,9 @@ else if (command === 'logout') setTimeout(() => emit({type:'logout_complete'}), 
 	const config = join(dir, "services/ShellConfig.qml");
 	await writeFile(
 		config,
-		(await readFile(config, "utf8")).replace("__AI_CODEX_HELPER__", helper),
+		(await readFile(config, "utf8"))
+			.replace("__AI_CODEX_HELPER__", helper)
+			.replace("__BAR_WIDGETS_JSON__", JSON.stringify(["aiUsage"])),
 	);
 	const child = spawn(
 		"quickshell",

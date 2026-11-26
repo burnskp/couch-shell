@@ -36,6 +36,8 @@ Item {
 
     readonly property bool topProcessesActive: Services.BarManager.visible && (topCpuProcessesEnabled || topMemoryProcessesEnabled)
     readonly property bool temperatureEnabled: Services.ShellConfig.barTemperatureEnabled
+    // CPU and RAM chips share one aggregate poll; skip it when neither chip is on the bar.
+    readonly property bool aggregateEnabled: Services.BarManager.visible && (Services.ShellConfig.barWidgetEnabled("cpu") || Services.ShellConfig.barWidgetEnabled("ram"))
     readonly property string primaryTemperaturePath: Services.ShellConfig.barTemperatureTextPath
     readonly property var temperaturePopupEntries: SystemStatsSensors.temperatureSensorEntries(Services.ShellConfig.barTemperaturePopupPaths)
     readonly property var fanPopupEntries: SystemStatsSensors.fanSensorEntries(Services.ShellConfig.barTemperatureFanPaths)
@@ -59,8 +61,10 @@ Item {
             Services.NotificationManager.recordNotification(SystemStatsDisk.alertPayload(root.diskSeverity, path, root.diskAvailableLabel, Services.NotificationManager.urgencyNormal, Services.NotificationManager.urgencyCritical));
     }
 
+    // The widget path keeps polling for low-space alerts even when the disk chip is not on the bar.
+    readonly property bool diskWidgetEnabled: Services.ShellConfig.barWidgetEnabled("disk")
     property var diskResults: Object.create(null)
-    readonly property var diskPaths: SystemStatsDisk.queryPaths(Services.ShellConfig.barDiskTextPath, Services.ShellConfig.barDiskBtrfsEnabled ? [] : Services.ShellConfig.barDiskPopupPaths)
+    readonly property var diskPaths: SystemStatsDisk.queryPaths(Services.ShellConfig.barDiskTextPath, Services.ShellConfig.barDiskBtrfsEnabled || !root.diskWidgetEnabled ? [] : Services.ShellConfig.barDiskPopupPaths)
     readonly property string diskAvailableLabel: SystemStatsDisk.availableLabel(diskResults[Services.ShellConfig.barDiskTextPath], SystemStatsFormatting.formatBytes)
     readonly property var diskRows: SystemStatsDisk.popupRows(Services.ShellConfig.barDiskPopupPaths, diskResults, SystemStatsFormatting.formatBytes)
     readonly property bool diskPollingActive: diskTimer.running
@@ -75,13 +79,13 @@ Item {
     }
 
     property var btrfsReport: null
-    readonly property bool btrfsPollingActive: Services.BarManager.visible && Services.ShellConfig.barDiskBtrfsEnabled
+    readonly property bool btrfsPollingActive: Services.BarManager.visible && root.diskWidgetEnabled && Services.ShellConfig.barDiskBtrfsEnabled
     readonly property bool btrfsQueryRunning: btrfsProcess.running
     readonly property string btrfsStatus: SystemStatsBtrfs.statusText(btrfsReport)
     readonly property var btrfsCards: SystemStatsBtrfs.volumeCards(btrfsReport, SystemStatsFormatting.formatBytes)
 
     function refreshBtrfs() {
-        if (Services.BarManager.visible && Services.ShellConfig.barDiskBtrfsEnabled && !btrfsProcess.running)
+        if (root.btrfsPollingActive && !btrfsProcess.running)
             btrfsProcess.running = true;
     }
 
@@ -294,7 +298,7 @@ Item {
     }
 
     function refreshAggregate() {
-        if (Services.BarManager.visible && !aggregateProcess.running)
+        if (root.aggregateEnabled && !aggregateProcess.running)
             aggregateProcess.running = true;
     }
 
@@ -404,7 +408,7 @@ Item {
 
     Timer {
         interval: 5000
-        running: Services.BarManager.visible
+        running: root.aggregateEnabled
         repeat: true
         onTriggered: root.refreshAggregate()
     }

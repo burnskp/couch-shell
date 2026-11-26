@@ -27,6 +27,33 @@ QtObject {
         }
     }
 
+    // Right-side bar chips in display order. "temperature" is also dropped when bar.temperature.enable is false.
+    readonly property var barWidgetIds: ["cpu", "temperature", "ram", "disk", "aiUsage", "wifi", "battery", "audio", "clock"]
+    readonly property var barWidgetsDefault: ["cpu", "temperature", "ram", "disk", "wifi", "battery", "audio", "clock"]
+
+    function parseBarWidgetsToken(token) {
+        let parsed = barWidgetsDefault;
+        try {
+            const value = JSON.parse(token);
+            if (Array.isArray(value))
+                parsed = value;
+        } catch (error) {}
+
+        const result = [];
+        for (const id of parsed) {
+            if (barWidgetIds.indexOf(id) >= 0 && result.indexOf(id) < 0)
+                result.push(id);
+        }
+        return result;
+    }
+
+    function barWidgetEnabled(id) {
+        return barWidgets.indexOf(id) >= 0;
+    }
+
+    readonly property string barWidgetsToken: '__BAR_WIDGETS_JSON__'
+    readonly property var barWidgets: parseBarWidgetsToken(barWidgetsToken).filter(id => id !== "temperature" || barTemperatureEnableToken === "true")
+
     readonly property var barDisk: parseDiskToken("__BAR_DISK_JSON__")
     readonly property real barDiskWarningThresholdGiB: barDisk.warningThresholdGiB ?? 50
     readonly property real barDiskCriticalThresholdGiB: barDisk.criticalThresholdGiB ?? 10
@@ -61,7 +88,7 @@ QtObject {
     readonly property string barHeightToken: "__BAR_HEIGHT__"
     readonly property int barHeight: Number(barHeightToken) > 0 ? Number(barHeightToken) : 20
     readonly property string barTemperatureEnableToken: "__BAR_TEMPERATURE_ENABLE__"
-    readonly property bool barTemperatureEnabled: barTemperatureEnableToken === "true"
+    readonly property bool barTemperatureEnabled: barWidgetEnabled("temperature")
     readonly property string barTemperatureTextPath: "__BAR_TEMPERATURE_TEXT_PATH__"
     readonly property string barTemperaturePopupPathsToken: '__BAR_TEMPERATURE_POPUP_PATHS__'
     readonly property var barTemperaturePopupPaths: parseObjectToken(barTemperaturePopupPathsToken)

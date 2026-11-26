@@ -46,6 +46,16 @@
         };
         bar = {
           height = 20;
+          widgets = [
+            "cpu"
+            "temperature"
+            "ram"
+            "disk"
+            "wifi"
+            "battery"
+            "audio"
+            "clock"
+          ];
           aiUsage = {
             defaultProvider = "chatgpt";
             hoverProviders = "all";
