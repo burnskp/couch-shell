@@ -10,7 +10,7 @@ Rectangle {
     property string styleVariant: "default"
     property string badgeText: ">"
     property string placeholderText: ""
-    property alias textInput: textInput
+    property alias textInput: textInputField
     readonly property int badgeWidth: root.styleVariant === "utility" ? 28 : root.styleVariant === "files" ? 34 : 30
     readonly property int textLeftMargin: root.badgeWidth + Theme.Theme.listGap + 8
 
@@ -20,7 +20,7 @@ Rectangle {
     color: root.surfaceColor
     radius: 0
     border.width: 1
-    border.color: textInput.activeFocus ? Qt.alpha(root.accentColor, 0.8) : Qt.alpha(root.accentColor, 0.22)
+    border.color: textInputField.activeFocus ? Qt.alpha(root.accentColor, 0.8) : Qt.alpha(root.accentColor, 0.22)
 
     Rectangle {
         anchors.left: parent.left
@@ -41,7 +41,7 @@ Rectangle {
     }
 
     TextInput {
-        id: textInput
+        id: textInputField
 
         anchors.fill: parent
         anchors.leftMargin: root.textLeftMargin
@@ -68,7 +68,7 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: root.textLeftMargin
         text: root.placeholderText
-        visible: textInput.text.length === 0
+        visible: textInputField.text.length === 0
         font.family: Theme.Theme.fontFamily
         font.pixelSize: Theme.Theme.fontSize
         font.weight: Theme.Theme.fontWeight

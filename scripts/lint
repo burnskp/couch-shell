@@ -13,7 +13,9 @@ for path in "${search_paths[@]}"; do
   fi
 done
 
-mapfile -t qml_files < <(find "${existing_paths[@]}" -type f -name '*.qml' | sort)
+# Pass absolute paths: qmllint 6.12 misreports qmldir singletons as undeclared
+# ("not declared as singleton in qmldir") when given relative file paths.
+mapfile -t qml_files < <(find "${existing_paths[@]/#/$repo_root/}" -type f -name '*.qml' | sort)
 
 if [[ ${#qml_files[@]} -eq 0 ]]; then
   echo "No QML files found to lint."

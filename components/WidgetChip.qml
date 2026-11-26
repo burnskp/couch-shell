@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import "." as Components
 import "../theme" as Theme
 
-ModuleChip {
+Components.ModuleChip {
     id: root
 
     property string appearancePreset: Theme.WidgetStyles.metric

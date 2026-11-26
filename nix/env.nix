@@ -3,10 +3,13 @@
 }:
 let
   markdownGuard = pkgs.callPackage ./markdown-guard.nix { };
+  # Quickshell QML modules with Qt 6.12 opaque qmltypes stubs removed so qmllint
+  # resolves the real types; see quickshell-qmltypes.nix.
+  quickshellQmltypes = pkgs.callPackage ./quickshell-qmltypes.nix { };
   qmlPackages = [
     markdownGuard
     pkgs.qt6.qtdeclarative
-    pkgs.quickshell
+    quickshellQmltypes
   ];
 
   qtPluginPackages = [

@@ -325,7 +325,7 @@ FocusScope {
                                     shellStyle: root.shellStyle
                                     paneState: root.paneState
                                     todo: todoDelegate.modelData
-                                    dragLayer: dragLayer
+                                    dragLayer: todoDragLayer
                                 }
                             }
                         }
@@ -349,7 +349,7 @@ FocusScope {
             }
 
             Item {
-                id: dragLayer
+                id: todoDragLayer
 
                 anchors.fill: parent
                 z: 100

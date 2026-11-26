@@ -6,7 +6,7 @@ import "." as Components
 import "../modules/bar/popups" as Popups
 import "../theme" as Theme
 
-WidgetChip {
+Components.WidgetChip {
     id: root
 
     appearancePreset: Theme.WidgetStyles.clock

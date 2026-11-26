@@ -33,17 +33,17 @@ RowLayout {
             property int stateRevision: 0
 
             readonly property string iconGlyph: {
-                stateRevision;
+                void stateRevision;
                 return Services.HyprlandState.overrideGlyphFor(modelData);
             }
             readonly property string fallbackGlyph: ""
             readonly property string iconName: {
-                stateRevision;
-                Services.HyprlandState.iconRevision;
+                void stateRevision;
+                void Services.HyprlandState.iconRevision;
                 return Services.HyprlandState.iconNameFor(modelData);
             }
             readonly property string title: {
-                stateRevision;
+                void stateRevision;
                 return Services.HyprlandState.titleFor(modelData);
             }
             readonly property string iconSource: iconName.startsWith("/") ? `file://${iconName}` : Quickshell.iconPath(iconName, "application-x-executable")

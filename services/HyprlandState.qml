@@ -168,7 +168,7 @@ QtObject {
     }
 
     function iconNameFor(toplevel) {
-        root.iconRevision;
+        void root.iconRevision;
 
         const lookupIds = lookupIdsFor(toplevel);
         for (const lookupId of lookupIds) {
