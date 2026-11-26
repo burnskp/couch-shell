@@ -7,7 +7,9 @@ import "../../../components" as Components
 Components.WidgetChip {
     id: root
 
-    readonly property real valueWidth: temperatureValueMetrics.advanceWidth(Services.ShellConfig.barTemperatureShowUnit ? "000 °C" : "000")
+    readonly property string valueTemplate: "0".repeat(Services.ShellConfig.barTemperatureDigits) + (Services.ShellConfig.barTemperatureShowUnit ? " °C" : "")
+    // Never reserve less than the "Unk" fallback so it does not overflow into the icon.
+    readonly property real valueWidth: Math.max(temperatureValueMetrics.advanceWidth(root.valueTemplate), temperatureValueMetrics.advanceWidth("Unk"))
 
     appearancePreset: Theme.WidgetStyles.metric
     popupWidth: 292

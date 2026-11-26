@@ -42,6 +42,7 @@ let
         inherit (cfg.bar.temperature)
           enable
           showUnit
+          digits
           textPath
           ;
         popupPaths =
@@ -286,6 +287,15 @@ in
           type = lib.types.bool;
           default = defaults.bar.temperature.showUnit;
           description = "Whether the temperature widget text includes the `°C` unit. The hover popup always shows units.";
+        };
+
+        digits = lib.mkOption {
+          type = lib.types.enum [
+            2
+            3
+          ];
+          default = defaults.bar.temperature.digits;
+          description = "Number of digits of width reserved for the temperature widget text. Use `2` on machines that never reach 100 °C to save bar space.";
         };
 
         textPath = lib.mkOption {

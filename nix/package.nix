@@ -76,6 +76,7 @@
     temperature = {
       enable = true;
       showUnit = true;
+      digits = 3;
       textPath = "/sys/class/hwmon/hwmon9/temp1_input";
       popupPaths = {
         cpu = "/sys/class/hwmon/hwmon9/temp1_input";
@@ -140,6 +141,7 @@ let
   cpuShowCores = lib.attrByPath [ "cpu" "showCores" ] true bar;
   ramShowUnit = lib.attrByPath [ "ram" "showUnit" ] true bar;
   temperatureShowUnit = lib.attrByPath [ "temperature" "showUnit" ] true bar;
+  temperatureDigits = lib.attrByPath [ "temperature" "digits" ] 3 bar;
   notificationHistoryLimit = lib.attrByPath [ "historyLimit" ] 200 notifications;
   aiUsageProviders = [
     "chatgpt"
@@ -209,6 +211,10 @@ assert lib.assertMsg (
 assert lib.assertMsg (
   builtins.isBool ramShowUnit && builtins.isBool temperatureShowUnit
 ) "couch-shell: bar.ram.showUnit and bar.temperature.showUnit must be booleans";
+assert lib.assertMsg (builtins.elem temperatureDigits [
+  2
+  3
+]) "couch-shell: bar.temperature.digits must be 2 or 3";
 assert lib.assertMsg (
   builtins.isInt notificationHistoryLimit && notificationHistoryLimit > 0
 ) "couch-shell: notifications.historyLimit must be a positive integer";
@@ -303,6 +309,7 @@ stdenvNoCC.mkDerivation {
       --replace-fail '__BAR_CPU_SHOW_CORES__' '${lib.boolToString cpuShowCores}' \
       --replace-fail '__BAR_RAM_SHOW_UNIT__' '${lib.boolToString ramShowUnit}' \
       --replace-fail '__BAR_TEMPERATURE_SHOW_UNIT__' '${lib.boolToString temperatureShowUnit}' \
+      --replace-fail '__BAR_TEMPERATURE_DIGITS__' '${toString temperatureDigits}' \
       --replace-fail '__BAR_HEIGHT__' '${toString barHeight}' \
       --replace-fail '__AI_USAGE_DEFAULT_PROVIDER__' '${aiUsageDefaultProvider}' \
       --replace-fail '__AI_USAGE_HOVER_PROVIDERS__' '${aiUsageHoverProviders}' \

@@ -90,6 +90,7 @@
           temperature = {
             enable = true;
             showUnit = true;
+            digits = 3;
             textPath = "/sys/class/hwmon/hwmon9/temp1_input";
             popupPaths = {
               cpu = "/sys/class/hwmon/hwmon9/temp1_input";

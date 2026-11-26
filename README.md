@@ -98,6 +98,7 @@ The Home Manager runtime configuration surface is intentionally small:
 - `bar.aiUsage.refreshInterval` (default `300` seconds)
 - `bar.temperature.enable`
 - `bar.temperature.showUnit` (default `true`; `°C` unit in the temperature widget text)
+- `bar.temperature.digits` (`2` or `3`, default `3`; digits of width reserved for the temperature widget text)
 - `bar.temperature.textPath`
 - `bar.temperature.popupPaths`
 - `bar.temperature.fanPaths`

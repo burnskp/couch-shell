@@ -95,6 +95,9 @@ QtObject {
     readonly property bool barRamShowUnit: barRamShowUnitToken !== "false"
     readonly property string barTemperatureShowUnitToken: "__BAR_TEMPERATURE_SHOW_UNIT__"
     readonly property bool barTemperatureShowUnit: barTemperatureShowUnitToken !== "false"
+    // Digits of width reserved for the temperature widget text. Anything other than "2" reserves 3.
+    readonly property string barTemperatureDigitsToken: "__BAR_TEMPERATURE_DIGITS__"
+    readonly property int barTemperatureDigits: barTemperatureDigitsToken === "2" ? 2 : 3
     readonly property string barHeightToken: "__BAR_HEIGHT__"
     readonly property int barHeight: Number(barHeightToken) > 0 ? Number(barHeightToken) : 20
     readonly property string barTemperatureEnableToken: "__BAR_TEMPERATURE_ENABLE__"
