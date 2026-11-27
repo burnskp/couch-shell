@@ -92,6 +92,7 @@ The Home Manager runtime configuration surface is intentionally small:
 - `bar.widgets` (ordered list of right-side widgets; see [Bar widgets](#bar-widgets))
 - `bar.cpu.showClusterBars` (default `true`; usage bar between each core-type label and its percentage in the CPU hover)
 - `bar.cpu.showCores` (default `true`; per-core usage list in the CPU hover)
+- `bar.cpu.showUnit` (default `true`; `%` unit in the CPU widget text)
 - `bar.ram.showUnit` (default `true`; `GiB` unit in the RAM widget text)
 - `bar.aiUsage.defaultProvider` (`chatgpt` or `claude`, default `chatgpt`)
 - `bar.aiUsage.hoverProviders` (`all` or `current`, default `all`)

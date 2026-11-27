@@ -18,6 +18,9 @@ TestCase {
         compare(SystemStatsFormatting.formatGib(0), "0.0 GiB");
         compare(SystemStatsFormatting.formatGib(3 * 1024 * 1024 * 1024), "3.0 GiB");
         compare(SystemStatsFormatting.formatGib(3 * 1024 * 1024 * 1024, false), "3.0");
+        compare(SystemStatsFormatting.formatPercent(42), "42%");
+        compare(SystemStatsFormatting.formatPercent(42, false), "42");
+        compare(SystemStatsFormatting.formatPercent(NaN), "0%");
         compare(SystemStatsFormatting.formatRpm(-1), "Unavailable");
         compare(SystemStatsFormatting.formatRpm(1540), "1540");
     }

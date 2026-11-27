@@ -90,7 +90,9 @@ QtObject {
     readonly property bool barCpuShowClusterBars: barCpuShowClusterBarsToken !== "false"
     readonly property string barCpuShowCoresToken: "__BAR_CPU_SHOW_CORES__"
     readonly property bool barCpuShowCores: barCpuShowCoresToken !== "false"
-    // Units in the RAM and temperature widget text. Anything other than "false" keeps the unit.
+    // Units in the CPU, RAM, and temperature widget text. Anything other than "false" keeps the unit.
+    readonly property string barCpuShowUnitToken: "__BAR_CPU_SHOW_UNIT__"
+    readonly property bool barCpuShowUnit: barCpuShowUnitToken !== "false"
     readonly property string barRamShowUnitToken: "__BAR_RAM_SHOW_UNIT__"
     readonly property bool barRamShowUnit: barRamShowUnitToken !== "false"
     readonly property string barTemperatureShowUnitToken: "__BAR_TEMPERATURE_SHOW_UNIT__"

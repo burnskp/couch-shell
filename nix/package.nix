@@ -45,6 +45,7 @@
     cpu = {
       showClusterBars = true;
       showCores = true;
+      showUnit = true;
     };
     ram = {
       showUnit = true;
@@ -139,6 +140,7 @@ let
   barWidgets = lib.attrByPath [ "widgets" ] (lib.remove "aiUsage" barWidgetIds) bar;
   cpuShowClusterBars = lib.attrByPath [ "cpu" "showClusterBars" ] true bar;
   cpuShowCores = lib.attrByPath [ "cpu" "showCores" ] true bar;
+  cpuShowUnit = lib.attrByPath [ "cpu" "showUnit" ] true bar;
   ramShowUnit = lib.attrByPath [ "ram" "showUnit" ] true bar;
   temperatureShowUnit = lib.attrByPath [ "temperature" "showUnit" ] true bar;
   temperatureDigits = lib.attrByPath [ "temperature" "digits" ] 3 bar;
@@ -209,8 +211,8 @@ assert lib.assertMsg (
   builtins.isBool cpuShowClusterBars && builtins.isBool cpuShowCores
 ) "couch-shell: bar.cpu.showClusterBars and bar.cpu.showCores must be booleans";
 assert lib.assertMsg (
-  builtins.isBool ramShowUnit && builtins.isBool temperatureShowUnit
-) "couch-shell: bar.ram.showUnit and bar.temperature.showUnit must be booleans";
+  builtins.isBool cpuShowUnit && builtins.isBool ramShowUnit && builtins.isBool temperatureShowUnit
+) "couch-shell: bar.cpu.showUnit, bar.ram.showUnit and bar.temperature.showUnit must be booleans";
 assert lib.assertMsg (builtins.elem temperatureDigits [
   2
   3
@@ -307,6 +309,7 @@ stdenvNoCC.mkDerivation {
       --replace-fail '__BAR_WIDGETS_JSON__' '${escapeQmlString (builtins.toJSON barWidgets)}' \
       --replace-fail '__BAR_CPU_SHOW_CLUSTER_BARS__' '${lib.boolToString cpuShowClusterBars}' \
       --replace-fail '__BAR_CPU_SHOW_CORES__' '${lib.boolToString cpuShowCores}' \
+      --replace-fail '__BAR_CPU_SHOW_UNIT__' '${lib.boolToString cpuShowUnit}' \
       --replace-fail '__BAR_RAM_SHOW_UNIT__' '${lib.boolToString ramShowUnit}' \
       --replace-fail '__BAR_TEMPERATURE_SHOW_UNIT__' '${lib.boolToString temperatureShowUnit}' \
       --replace-fail '__BAR_TEMPERATURE_DIGITS__' '${toString temperatureDigits}' \

@@ -43,7 +43,6 @@ Item {
     readonly property var fanPopupEntries: SystemStatsSensors.fanSensorEntries(Services.ShellConfig.barTemperatureFanPaths)
     readonly property real memoryAvailableBytes: Math.max(memoryTotalBytes - memoryUsedBytes, 0)
     readonly property string memoryAvailableLabel: formatGib(memoryAvailableBytes)
-    readonly property string cpuUsageLabel: cpuUsagePercent + "%"
     readonly property string primaryTemperatureLabel: formatTemperature(primaryTemperatureC)
 
     property int diskAlertLevel: 0
@@ -391,6 +390,10 @@ Item {
 
     function formatGib(bytes, showUnit) {
         return SystemStatsFormatting.formatGib(bytes, showUnit !== false);
+    }
+
+    function formatPercent(value, showUnit) {
+        return SystemStatsFormatting.formatPercent(value, showUnit !== false);
     }
 
     function formatProcessCpuPercent(value) {

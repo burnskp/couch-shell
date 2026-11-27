@@ -59,6 +59,7 @@
           cpu = {
             showClusterBars = true;
             showCores = true;
+            showUnit = true;
           };
           ram = {
             showUnit = true;

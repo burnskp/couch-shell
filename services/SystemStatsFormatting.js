@@ -33,6 +33,11 @@ function formatGib(bytes, showUnit = true) {
 	return showUnit ? `${value} GiB` : value;
 }
 
+function formatPercent(value, showUnit = true) {
+	const rounded = Number.isFinite(value) ? Math.round(value) : 0;
+	return showUnit ? `${rounded}%` : `${rounded}`;
+}
+
 function formatProcessCpuPercent(value) {
 	if (!Number.isFinite(value) || value < 0) return "0.0%";
 

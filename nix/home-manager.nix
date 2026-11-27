@@ -195,6 +195,12 @@ in
           default = defaults.bar.cpu.showCores;
           description = "Whether the CPU hover lists per-core usage under each core-type row.";
         };
+
+        showUnit = lib.mkOption {
+          type = lib.types.bool;
+          default = defaults.bar.cpu.showUnit;
+          description = "Whether the CPU widget text includes the `%` unit. The hover popup always shows units.";
+        };
       };
 
       ram = {
